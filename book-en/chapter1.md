@@ -339,13 +339,15 @@ Recent engineering practice supports this view. LangChain's work on Terminal Ben
 
 ### Core Principles for Building Effective Agents
 
-Based on Anthropic's experience, successful Agent systems follow three core principles.
+Based on Anthropic's experience, successful Agent systems follow three core principles[^ch1-anthropic-building-effective-agents].
 
 **Keep it simple.** Start with the simplest solution and add complexity only when truly necessary. Direct API calls are preferable to complex frameworks; clear code is preferable to clever abstraction—every extra layer of abstraction is a new blind spot during debugging.
 
 **Keep it transparent.** Show the Agent's planning steps, execution logs, and decision trajectory clearly. This is not just a debugging convenience; it is a precondition for user trust—an error inside a black box is hard to locate or fix from outside.
 
 **Design a well-structured tool interface (ACI, Agent-Computer Interface).** ACI means designing the interface from the Agent's perspective—easy for the Agent to understand and use—rather than from the programmer's perspective, as in traditional APIs. Tool names and parameters should be intuitive, and wherever misuse is likely the design should make the mistake impossible from the start: a SIM card's notched corner lets it slide into the tray in only one orientation, and a microwave refuses to heat while its door is open. Manufacturing calls this "designing errors out" philosophy **Poka-yoke**, a term from the Toyota Production System. A poorly designed tool can cause even the strongest model to fail repeatedly: the interface is the only channel between model and tool, and a vague interface gets amplified into systemic error.
+
+[^ch1-anthropic-building-effective-agents]: Anthropic. "Building effective agents", December 2024. https://www.anthropic.com/engineering/building-effective-agents
 
 The next three sections address three freestanding but important topics in Harness engineering: model selection, orchestration patterns, and guardrails and safety. None belongs to the five Harness elements proper, but all are unavoidable in engineering practice.
 
@@ -367,7 +369,7 @@ The model is the foundation of the Agent's intelligence, and choosing the right 
 
 ### Orchestration Patterns: Workflow vs. Autonomous
 
-Orchestration patterns are how the Harness organizes its "context and tools" layer—they determine how context flows between LLM calls, how tools are scheduled, and whether the Agent's execution path is fixed in advance or generated dynamically. Agent orchestration has evolved from simple to complex, and each pattern has suitable use cases and trade-offs. In Anthropic's experience working with dozens of teams building LLM Agents, the most successful implementations rarely use complex frameworks; they use simple, composable patterns.
+Orchestration patterns are how the Harness organizes its "context and tools" layer—they determine how context flows between LLM calls, how tools are scheduled, and whether the Agent's execution path is fixed in advance or generated dynamically. Agent orchestration has evolved from simple to complex, and each pattern has suitable use cases and trade-offs. In Anthropic's experience working with dozens of teams building LLM Agents[^ch1-anthropic-building-effective-agents], the most successful implementations rarely use complex frameworks; they use simple, composable patterns.
 
 When building an LLM application, follow the principle of progressing from simple to complex. Start by considering a single LLM call. If better prompts and in-context examples can solve the problem, do not introduce an Agent system. When multi-step processing is needed, consider a workflow for scenarios that decompose cleanly into fixed subtasks. Use an autonomous Agent only when dynamic decisions and flexible execution paths are required. Remember that Agent systems typically trade latency and cost for better task performance, so carefully weigh whether that trade is worthwhile.
 
