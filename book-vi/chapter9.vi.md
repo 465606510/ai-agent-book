@@ -262,6 +262,18 @@ Ra ngoài một tầng, đối tượng tối ưu không chỉ là “ngữ cả
 
 Ý tưởng này mở rộng tới quy trình công việc và toàn bộ Harness. AFlow biểu diễn quy trình gồm nhiều lần gọi LLM thành đồ thị mã và dùng phản hồi thực thi để tìm tổ hợp nút cùng luồng điều khiển[^aflow-2025]. Meta-Harness để Coding Agent đọc mã nguồn, điểm số và quỹ đạo của Harness ứng viên rồi tìm kiếm mã quyết định cách lưu, truy xuất và trình bày thông tin[^meta-harness-2026]. Chương 5 đã xem mã là ngôn ngữ chung biểu đạt cấu trúc hệ thống Agent; điểm mới ở đây là mã cùng lịch sử đánh giá có thể trở thành đối tượng tìm kiếm liên tục, không chỉ là đầu ra một lần.
 
+Kiểu tìm kiếm ở vòng ngoài này sớm gặp phải vấn đề chi phí phản hồi. Chiến lược khám phá quyết định tiếp tục từ ứng viên nào, khi nào mở nhánh mới, đầu tư bao nhiêu Worker chạy song song và khi nào dừng lại; nó tốt hay xấu thường chỉ lộ ra sau một chuỗi sinh–đánh giá rất dài. Nếu mỗi chiến lược ứng viên đều phải gọi lại Agent và bộ đánh giá, việc tối ưu chính chiến lược khám phá có thể còn tốn kém hơn hoàn thành nhiệm vụ.
+
+Dream-RSI đề xuất một cơ chế khác với “tóm tắt lịch sử”: lưu quá trình khám phá đã hoàn thành thành một **cây khám phá**, rồi coi cây đó như một **bộ mô phỏng phát lại** (replay simulator) mang tính kinh nghiệm[^dream-rsi-2026]. Nút gốc biểu diễn không gian làm việc ban đầu; mỗi nút con lưu ảnh chụp không gian làm việc, tạo tác ứng viên, chẩn đoán đánh giá và điểm số thu được khi tiếp tục thử từ một trạng thái lịch sử nào đó. Chiến lược ứng viên dùng cùng giao diện với khám phá trực tuyến để từng bước chọn nút lá cần mở rộng hoặc mở nhánh mới từ nút gốc. Bộ phát lại chỉ tiết lộ kết quả đã được ghi trong nút tương ứng, không cần chạy lại Agent và bộ đánh giá bên dưới.
+
+Điểm mấu chốt khiến phát lại có hiệu lực là giai đoạn trực tuyến và ngoại tuyến dùng cùng một giao diện quyết định, và chỉ dần tiết lộ cho chiến lược cây con hiện đã được mở rộng. Ở giai đoạn trực tuyến, nút được chọn thực sự gọi Agent và bộ đánh giá bên dưới; ở giai đoạn ngoại tuyến, cùng lựa chọn đó chỉ trả về nút kế tiếp đã ghi trong lịch sử. Nhờ vậy chiến lược ứng viên có thể so sánh các nhánh, thứ tự, lô song song và thời điểm dừng khác nhau, nhưng không thể nhìn trộm những kết quả tương lai chưa hiện hữu tại thời điểm ra quyết định trực tuyến.
+
+Điều này tạo thành một vòng khép kín đệ quy gồm ba giai đoạn: **khám phá trực tuyến** dùng chiến lược hiện tại để sinh cây khám phá mới; **xây dựng thế giới phát lại** đưa các cây khám phá vào kho bộ mô phỏng lịch sử; **mơ ngoại tuyến** để Agent phát triển chiến lược sửa mã chiến lược khám phá và so sánh các phiên bản theo chất lượng ứng viên, chi phí thực thi và hiệu suất song song. Chiến lược được chọn quay lại trực tuyến sẽ sinh ra cây mới, đồng thời mở rộng phạm vi kinh nghiệm mà vòng sau có thể phát lại. Tập ứng viên giữ lại chiến lược hiện tại, nên phiên bản mới ít nhất không tệ hơn về điểm phát lại trung bình trên lịch sử hiện có, nhưng đó chỉ là bảo đảm trong phạm vi lịch sử.
+
+“Phát lại” ở đây khác với hai cách tái sử dụng lịch sử đã nói ở trên. Tóm tắt quỹ đạo nén kinh nghiệm thành tri thức hoặc Prompt, làm thay đổi việc Agent **biết gì**; phát lại quy trình công việc trên trình duyệt để chương trình lặp lại một lộ trình đã xác minh trong nhiệm vụ mới, làm thay đổi cách Agent **lặp lại thực thi**; còn phát lại cây khám phá thì so sánh cách Agent **tổ chức khám phá**. Nó cũng không phải một mô hình thế giới hoàn chỉnh có thể dự đoán hậu quả của hành động bất kỳ: nó chỉ có thể tổ hợp lại những nhánh thực sự đã đi qua trong lịch sử, và không bảo đảm chiến lược đạt điểm cao hơn trên cây cũ sẽ chuyển giao được sang nhiệm vụ mới.
+
+Xét theo cách phân loại của chương này, phát lại lịch sử không phải vật mang cập nhật thứ năm bên cạnh tri thức, Prompt, chương trình và tham số, mà là một **cơ chế mới để sinh và xác minh đề xuất cập nhật**. Thứ Dream-RSI cuối cùng sửa đổi là mã chiến lược khám phá, nên tạo tác vẫn thuộc về chương trình/Harness; điểm mới của nó là biến lịch sử vốn chỉ dùng làm ngữ cảnh hoặc dữ liệu huấn luyện thành một môi trường đánh giá ngoại tuyến có thể tương tác lặp đi lặp lại, đẩy tự tiến hóa lên tầng siêu chiến lược “phân bổ tính toán khám phá như thế nào”.
+
 > **Thí nghiệm 9-8 ★★★: Đưa cuốn sách này cho Hermes: nó có thể tự nâng cấp không?**
 >
 > **Mục tiêu**: Kiểm tra liệu một Agent có thể biến tri thức bên ngoài thành một bản cập nhật thật cho chính năng lực của mình hay không. Thí nghiệm không nêu sẵn vấn đề hay danh sách tính năng. Hermes nhận cả mười chương và mã nguồn của mình, rồi phải hiểu nguyên tắc, xem lại cách triển khai và tự chọn một cải tiến đáng làm.
@@ -383,6 +395,8 @@ Tiến hóa liên tục cũng không có nghĩa là để tri thức, Prompt và
 
 [^meta-harness-2026]: Lee, Yoonho, et al. *Meta-Harness: End-to-End Optimization of Model Harnesses.* arXiv:2603.28052, 2026.
 
+[^dream-rsi-2026]: Zheng, T., et al. *Dream-RSI: Recursive Self-Improvement through Evolving Worlds.* arXiv:2609.14858, 2026. https://arxiv.org/abs/2609.14858
+
 [^ahe-2026]: Lin, Jiahang, et al. *Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses.* arXiv:2604.25850, 2026.
 
 [^self-harness-2026]: Zhang, Hangfan, et al. *Self-Harness: Harnesses That Improve Themselves.* arXiv:2606.09498, 2026.
@@ -401,6 +415,8 @@ Xét theo cấu trúc toàn sách, chương này dựng đoạn **thực nghiệ
 
 Agent nhận tín hiệu học từ tương tác và đánh giá, rồi tùy tính chất biểu diễn của năng lực mà cập nhật tri thức, Prompt, Skill, chương trình hoặc tham số mô hình. Hệ thống cũng có thể tối ưu phương pháp quản lý và tạo ra các tạo tác này, nhưng nên ưu tiên sửa đổi cục bộ có thể quy kết, xác minh và khôi phục.
 
+Lịch sử không chỉ có thể được chắt lọc thành kinh nghiệm tĩnh, mà còn có thể được ghép thành môi trường phát lại trong miền hỗ trợ để sàng lọc chiến lược khám phá với chi phí thấp. Điều này cho phép tiến hóa liên tục tác động thêm vào “tổ chức khám phá như thế nào”, chứ không chỉ vào tri thức, chỉ dẫn và chương trình mà khám phá sinh ra.
+
 Tiến hóa liên tục cần tách thực thi trực tuyến khỏi học ngoại tuyến: ghi bằng chứng trực tuyến; sinh và xác minh cập nhật ứng viên ngoại tuyến; rồi từng bước phát hành, chỉnh lý hoặc khôi phục. Vòng khép kín này đáng tin cậy nhất với nhiệm vụ có kết quả tự động xác minh được; trong nhiệm vụ mở có mục tiêu mơ hồ và phản hồi trễ, con người vẫn phải tham gia định nghĩa vấn đề và xây dựng tiêu chuẩn đánh giá.
 
 ## Câu hỏi suy ngẫm
@@ -411,3 +427,4 @@ Tiến hóa liên tục cần tách thực thi trực tuyến khỏi học ngo�
 4. ★★★ Agent có thể sửa đổi công cụ và bộ xác minh, nhưng không nên sửa đổi gốc tin cậy phê duyệt cập nhật của chính nó. Bạn sẽ phân chia quyền hạn và ranh giới mã giữa hai phần này như thế nào?
 5. ★★ Sau khi kho tri thức kinh nghiệm liên tục tăng trưởng, lỗi truy xuất và xung đột tri thức sẽ triệt tiêu lợi ích học tập. Nên thiết kế cơ chế phiên bản, thời hiệu và loại bỏ như thế nào?
 6. ★★★ Học tham số giỏi xử lý phong cách ngôn ngữ tự nhiên nhưng khó bảo đảm quy tắc nghiệp vụ cứng. Hãy thiết kế cho dịch vụ chăm sóc khách hàng y tế một phương án tiến hóa liên tục phối hợp giữa tham số, tri thức, Skill và ràng buộc bằng mã.
+7. ★★★ Trong phát lại lịch sử, một chiến lược khám phá đạt điểm cao nhất trên mọi cây khám phá cũ, nhưng lại thoái hóa ở vòng khám phá trực tuyến tiếp theo. Những thiên lệch miền hỗ trợ, tính ngẫu nhiên và quá khớp đánh giá nào có thể gây ra kết quả này? Bạn sẽ phân chia các thế giới phát lại và thiết kế cổng phát hành như thế nào?

@@ -262,6 +262,18 @@ Bir katman daha dışarı çıkıldığında optimizasyon nesnesi artık yalnız
 
 Aynı düşünce iş akışlarına ve tüm Harness'e genişletilebilir. AFlow, birden çok LLM çağrısından oluşan iş akışını bir kod grafiği olarak temsil eder ve yürütme geri bildirimiyle düğüm ve kontrol akışı birleşimlerini arar[^aflow-2025]; Meta-Harness ise Kodlama Agent'ına aday Harness'in kaynak kodunu, puanlarını ve trajectory'lerini okutarak bilginin nasıl saklandığını, getirildiğini ve sunulduğunu belirleyen kodu arar[^meta-harness-2026]. Bölüm 5, kodun Agent'ın sistem yapısını ifade ettiği genel dil olduğunu zaten göstermişti; buradaki yenilik şu: kod yalnızca bir kez üretilen bir çıktı değildir, değerlendirme geçmişiyle birlikte sürekli aramanın nesnesi de olabilir.
 
+Bu tür dış katman araması çok geçmeden geri bildirim maliyeti sorunuyla karşılaşır. Keşif stratejisi hangi adaydan devam edileceğine, ne zaman yeni bir dal açılacağına, paralel olarak kaç Worker çalıştırılacağına ve ne zaman durulacağına karar verir; iyi olup olmadığı çoğu zaman ancak uzun bir üretme—değerlendirme zincirinin ardından görünür hâle gelir. Her aday stratejinin Agent'ı ve değerlendiriciyi yeniden çağırması gerekseydi, keşif stratejisinin kendisini optimize etmek görevi tamamlamaktan daha pahalıya gelebilirdi.
+
+Dream-RSI, "geçmişi özetlemek"ten farklı bir mekanizma öneriyor: tamamlanmış bir keşif sürecini bir **keşif ağacı** olarak saklamak, sonra bu ağacı deneyime dayalı bir **yeniden oynatma simülatörü** olarak kullanmak[^dream-rsi-2026]. Kök düğüm başlangıçtaki çalışma alanını temsil eder; her çocuk düğüm, geçmişteki bir durumdan denemeye devam edildiğinde elde edilen çalışma alanı anlık görüntüsünü, aday artifact'ı, değerlendirme tanısını ve puanı saklar. Aday strateji, çevrimiçi keşifle aynı arayüz üzerinden adım adım hangi yaprak düğümün genişletileceğini ya da kökten yeni bir dal açılıp açılmayacağını seçer. Yeniden oynatıcı yalnızca ilgili düğümde zaten kaydedilmiş sonuçları açığa çıkarır; alttaki Agent'ı ve değerlendiriciyi yeniden çalıştırması gerekmez.
+
+Yeniden oynatmanın geçerli olmasının anahtarı, çevrimiçi ve çevrimdışı aşamaların aynı karar arayüzünü kullanması ve stratejiye yalnızca o ana kadar genişletilmiş alt ağacın adım adım açığa çıkarılmasıdır. Çevrimiçi aşamada seçilen düğüm alttaki Agent'ı ve değerlendiriciyi gerçekten çağırır; çevrimdışı aşamada aynı seçim yalnızca geçmişte zaten kaydedilmiş ardılı döndürür. Aday strateji böylece farklı dalları, sıralamaları, paralel toplu işleri ve durma anlarını karşılaştırabilir; ama çevrimiçi karar verilirken henüz görünür olmayan gelecekteki sonuçlara göz atamaz.
+
+Bu, üç aşamalı özyinelemeli bir kapalı döngü oluşturur: **çevrimiçi keşif**, mevcut stratejiyle yeni keşif ağaçları üretir; **yeniden oynatma dünyasını kurma**, keşif ağaçlarını geçmiş simülatör havuzuna ekler; **çevrimdışı rüya görme** ise strateji geliştirme Agent'ının keşif stratejisi kodunu değiştirmesine ve sürümleri aday kalitesine, yürütme maliyetine ve paralel verimliliğe göre karşılaştırmasına olanak verir. Seçilen strateji yeniden çevrimiçine alındığında yeni ağaçlar üretir ve bir sonraki turda yeniden oynatılabilecek deneyim aralığını da genişletir. Aday kümesi mevcut stratejiyi koruduğu için yeni sürüm, en azından var olan geçmiş üzerindeki ortalama yeniden oynatma puanında daha kötü olmaz; ama bu yalnızca geçmiş içinde geçerli bir güvencedir.
+
+Buradaki "yeniden oynatma", önceki bölümlerde anlatılan iki geçmişi yeniden kullanma biçiminden farklıdır. Trajectory özetleme deneyimi bilgiye ya da Prompt'a sıkıştırır ve Agent'ın **ne bildiğini** değiştirir; tarayıcı iş akışının yeniden oynatılması, programın yeni bir görevde doğrulanmış bir yolu yinelemesini sağlar ve Agent'ın **yürütmeyi nasıl yinelediğini** değiştirir; keşif ağacının yeniden oynatılması ise Agent'ın **keşfi nasıl örgütlediğini** karşılaştırır. Bu, herhangi bir eylemin sonucunu öngörebilen eksiksiz bir dünya modeli de değildir: yalnızca geçmişte gerçekten yürünmüş dalları yeniden birleştirebilir; eski ağaçlarda daha yüksek puan alan bir stratejinin yeni görevlere aktarılacağını güvence altına alamaz.
+
+Bu bölümün sınıflandırması açısından geçmişi yeniden oynatma; bilgi, Prompt, program ve parametrelerin yanına eklenen beşinci bir güncelleme taşıyıcısı değil, **güncelleme önerileri üretip doğrulamanın yeni bir mekanizmasıdır**. Dream-RSI'ın sonunda değiştirdiği şey keşif stratejisi kodudur; dolayısıyla ürün hâlâ program/Harness kategorisine girer. Yeniliği, daha önce context ya da eğitim verisi olarak kullanılan geçmişi tekrar tekrar etkileşime girilebilen bir çevrimdışı değerlendirme ortamına dönüştürmesi ve kendini evrimleştirmeyi "keşif hesaplaması nasıl dağıtılır" sorusunun meta-strateji katmanına taşımasıdır.
+
 > **Deney 9-8 ★★★: Bu Kitabı Hermes'e Verirsek Kendini Yükseltebilir mi?**
 >
 > **Amaç**: Bir Agent'ın dış bilgiyi kendi yeteneklerinde gerçek bir güncellemeye dönüştürüp dönüştüremediğini sınamak. Deney bir sorun ya da özellik listesi vermez; Hermes'e on bölüm ve kendi kaynak kodu verilir, ilkeleri anlaması, uygulamasını incelemesi ve değerli bir iyileştirmeyi kendisinin seçmesi beklenir.
@@ -383,6 +395,8 @@ Sürekli evrim, bilginin, Prompt'un ve araçların sınırsızca büyümesi deme
 
 [^meta-harness-2026]: Lee, Yoonho, et al. *Meta-Harness: End-to-End Optimization of Model Harnesses.* arXiv:2603.28052, 2026.
 
+[^dream-rsi-2026]: Zheng, T., et al. *Dream-RSI: Recursive Self-Improvement through Evolving Worlds.* arXiv:2609.14858, 2026. https://arxiv.org/abs/2609.14858
+
 [^ahe-2026]: Lin, Jiahang, et al. *Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses.* arXiv:2604.25850, 2026.
 
 [^self-harness-2026]: Zhang, Hangfan, et al. *Self-Harness: Harnesses That Improve Themselves.* arXiv:2606.09498, 2026.
@@ -401,6 +415,8 @@ Kitabın bütünsel yapısı açısından bu bölüm, Bölüm 1'deki keşif dön
 
 Agent, öğrenme sinyalini ortamla etkileşiminden ve değerlendirmelerden alır; sonra yeteneğin temsil niteliğine göre bilgiyi, Prompt'u, Skill'i, programı veya model parametrelerini günceller. Sistem, bu artifact'ları yöneten ve üreten yöntemleri de bir adım öteye taşıyıp optimize edebilir; ama öncelikle nedeni bulunabilir, doğrulanabilir ve geri alınabilir yerel değişiklikler tercih edilmelidir.
 
+Geçmiş yalnızca durağan deneyime damıtılmakla kalmaz; destek alanı içinde, keşif stratejilerini düşük maliyetle eleyen bir yeniden oynatma ortamına da dönüştürülebilir. Böylece sürekli evrim, yalnızca keşfin ürettiği bilgi, talimat ve programlar üzerinde değil, "keşfin nasıl örgütlendiği" üzerinde de etkili olabilir.
+
 Sürekli evrim, çevrimiçi yürütmeyi çevrimdışı öğrenmeden ayırmayı gerektirir: çevrimiçi tarafta kanıt kaydedilir, çevrimdışı tarafta aday güncellemeler üretilip doğrulanır, sonra kademeli olarak yayımlanır, düzenlenir veya geri alınır. Bu döngü, sonucu otomatik olarak doğrulanabilen görevlerde en güvenilir biçimde çalışır; hedefi muğlak, geri bildirimi gecikmeli açık uçlu görevlerde ise problemin tanımlanmasına ve değerlendirme ölçütlerinin belirlenmesine insanın katılması gerekir.
 
 ## Düşünce Soruları
@@ -411,3 +427,4 @@ Sürekli evrim, çevrimiçi yürütmeyi çevrimdışı öğrenmeden ayırmayı g
 4. ★★★ Agent araçları ve doğrulayıcıları değiştirebilir, ama kendi güncellemesini onaylayan güven kökünü değiştirmemelidir. Bu iki parçanın yetki ve kod sınırlarını nasıl ayırırdınız?
 5. ★★ Deneyim bilgi tabanı sürekli büyüdükçe retrieval hataları ve bilgi çatışmaları öğrenme kazancını götürür. Sürüm, güncellik ve eleme mekanizmalarını nasıl tasarlarsınız?
 6. ★★★ Parametre öğrenmesi doğal dil üslubunda başarılıdır, ama katı iş kurallarını güvence altına alması zordur. Tıbbi müşteri hizmetleri için parametre, bilgi, Skill ve kod kısıtlarının birlikte çalıştığı bir sürekli evrim tasarımı yapın.
+7. ★★★ Geçmiş yeniden oynatmasında bir keşif stratejisi bütün eski keşif ağaçlarında en yüksek puanı alıyor, ama bir sonraki çevrimiçi keşif turunda geriliyor. Hangi destek alanı sapmaları, rastgelelik ve değerlendirme aşırı uyumu bu sonuca yol açmış olabilir? Yeniden oynatma dünyalarını nasıl bölümler, yayın eşiklerini nasıl tasarlardınız?

@@ -264,6 +264,18 @@ At the next level, the optimization target is no longer merely what context cont
 
 The same idea extends to workflows and the entire Harness. AFlow represents workflows composed of multiple LLM calls as code graphs and searches over combinations of nodes and control flow using execution feedback[^aflow-2025]. Meta-Harness has a Coding Agent inspect candidate Harness source, scores, and trajectories to search for improvements to the code governing how information is stored, retrieved, and presented[^meta-harness-2026]. Chapter 5 established code as a general language for expressing Agent system structure. The additional point here is that code, together with its evaluation history, can itself become the object of continual search rather than a one-time output.
 
+This kind of outer-loop search soon runs into the cost of feedback. An exploration policy decides which candidate to continue from, when to open a new branch, how many Workers to run in parallel, and when to stop; whether it is any good often shows only after a long generate–evaluate chain. If every candidate policy had to call the Agent and the evaluator all over again, optimizing the exploration policy itself could cost more than finishing the task.
+
+Dream-RSI proposes a mechanism that differs from “summarizing history”: it preserves a completed discovery process as a **discovery tree** and then treats that tree as an empirical **replay simulator**[^dream-rsi-2026]. The root node represents the initial workspace; each child node stores the workspace snapshot, candidate artifact, evaluation diagnostics, and score obtained by continuing from some historical state. A candidate policy uses the same interface as online exploration to choose, step by step, which leaf node to expand or whether to open a new branch from the root. The replayer only reveals results already recorded in the corresponding node; it never needs to rerun the underlying Agent or evaluator.
+
+What makes replay valid is that the online and offline phases share the same decision interface, and the policy is only shown, step by step, the subtree expanded so far. Online, a selected node really invokes the underlying Agent and evaluator; offline, the same choice returns only the successor recorded in history. A candidate policy can therefore compare different branches, orderings, parallel batches, and stopping points, yet cannot peek at future results that were not yet visible when the online decision was made.
+
+This forms a recursive loop with three phases: **online exploration** uses the current policy to generate new discovery trees; **building the replay world** adds those trees to the pool of historical simulators; **offline dreaming** lets a policy-development Agent modify the exploration-policy code and compare versions by candidate quality, execution cost, and parallel efficiency. The selected policy goes back online, produces new trees, and widens the range of experience the next round can replay. Because the candidate set keeps the current policy, a new version is at least no worse on the average replay score over existing history, but that guarantee holds only within that history.
+
+This “replay” differs from the two ways of reusing history described earlier in the chapter. Trajectory summarization compresses experience into knowledge or Prompts and changes what the Agent **knows**; browser workflow replay lets a program repeat a validated path in a new task and changes how the Agent **repeats an execution**; discovery-tree replay compares how the Agent **organizes exploration**. Nor is it a full world model that can predict the consequences of arbitrary actions: it can only recombine branches actually taken in history, and it cannot guarantee that a policy scoring higher on old trees transfers to new tasks.
+
+In this chapter's classification, history replay is not a fifth medium for updates alongside knowledge, Prompts, programs, and parameters; it is a **new mechanism for producing and validating update proposals**. What Dream-RSI ultimately modifies is exploration-policy code, so the product still belongs to program/Harness. Its novelty is to turn history, which previously served as context or training data, into an offline evaluation environment that can be interacted with repeatedly, pushing self-evolution up to the meta-policy level of “how to allocate exploration compute.”
+
 > **Experiment 9-8 ★★★: Give Hermes This Book: Can It Upgrade Itself?**
 >
 > **Objective:** Test whether an Agent can turn external knowledge into an update to its own capabilities. The experiment supplies no problem statement and no feature checklist. Hermes receives all ten chapters and its own source, then must understand the principles, inspect its implementation, and choose a worthwhile improvement itself.
@@ -385,6 +397,8 @@ Continual evolution does not mean allowing knowledge, Prompts, and tools to grow
 
 [^meta-harness-2026]: Lee, Yoonho, et al. *Meta-Harness: End-to-End Optimization of Model Harnesses.* arXiv:2603.28052, 2026.
 
+[^dream-rsi-2026]: Zheng, T., et al. *Dream-RSI: Recursive Self-Improvement through Evolving Worlds.* arXiv:2609.14858, 2026. https://arxiv.org/abs/2609.14858
+
 [^ahe-2026]: Lin, Jiahang, et al. *Agentic Harness Engineering: Observability-Driven Automatic Evolution of Coding-Agent Harnesses.* arXiv:2604.25850, 2026.
 
 [^self-harness-2026]: Zhang, Hangfan, et al. *Self-Harness: Harnesses That Improve Themselves.* arXiv:2606.09498, 2026.
@@ -403,6 +417,8 @@ In terms of the book's larger structure, this chapter builds the **experiment an
 
 An Agent obtains learning signals from interaction and evaluation, then updates knowledge, Prompts, Skills, programs, or model parameters according to how the capability is represented. The system can also optimize the methods used to manage and generate these artifacts, but it should prefer local changes that are attributable, verifiable, and reversible.
 
+History can not only be distilled into static experience; within its support domain it can also be assembled into a replay environment that screens exploration policies at low cost. This lets continual evolution act on “how exploration is organized,” not only on the knowledge, instructions, and programs that exploration produces.
+
 Continual evolution should separate online execution from offline learning: record evidence online; generate and validate candidate updates offline; then release, consolidate, or roll them back gradually. This loop is most reliable when outcomes are automatically verifiable. For open-ended tasks with ambiguous objectives and delayed feedback, people must still participate in problem definition and the design of evaluation criteria.
 
 ## Questions for Reflection
@@ -413,3 +429,4 @@ Continual evolution should separate online execution from offline learning: reco
 4. ★★★ An Agent may modify tools and validators, but it should not be allowed to modify the trusted root that approves its own updates. How would you separate the permissions and code boundaries of these two parts?
 5. ★★ As the experience knowledge base grows, retrieval errors and knowledge conflicts may offset the benefits of learning. How should versioning, freshness, and retirement mechanisms be designed?
 6. ★★★ Parameter learning is effective for natural-language style but struggles to guarantee strict business rules. Design a continual-evolution scheme for medical customer service that coordinates parameters, knowledge, Skills, and code-level constraints.
+7. ★★★ An exploration policy scores highest on every old discovery tree during history replay, yet degrades in the next round of online exploration. What support-domain bias, randomness, and evaluation overfitting could produce this result? How would you partition the replay worlds and design release gates?
