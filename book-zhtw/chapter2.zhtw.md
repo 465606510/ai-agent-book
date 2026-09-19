@@ -705,7 +705,7 @@ Step 5: Verification
 [^ch2-toolsearch-cc]: Anthropic, "Scale with MCP tool search", Claude Code 文件. https://code.claude.com/docs/en/mcp
 [^ch2-toolsearch-codex]: OpenAI Codex CLI 原始碼，`codex-rs/core/templates/search_tool/tool_description.md`——該模板告知模型：部分工具並未預先提供，需要用 `tool_search` 搜尋並載入。
 
-為什麼追加到末尾就不破壞快取？這正是前文 KV Cache 字首性質的直接推論：因果注意力決定了每個 token 的鍵值對只依賴它之前的 token，因此在末尾追加新內容不會改變任何已快取 token 的 K、V——新增的工具 schema 只需在首次出現時計算一次（一次性的快取寫入），此後就併入不斷增長的「字首」，在後續所有輪次持續命中。所以這不是「預編譯」，而是「只增不改」的追加式注入。
+為什麼追加到末尾就不破壞快取？這正是前文 KV Cache 字首性質的直接推論：因果注意力決定了每個 token 在每一層的隱狀態（以及由它算出的 K、V）只依賴該 token 自身和它之前的 token，與後面的 token 無關，因此在末尾追加新內容不會改變任何已快取 token 的 K、V——新增的工具 schema 只需在首次出現時計算一次（一次性的快取寫入），此後就併入不斷增長的「字首」，在後續所有輪次持續命中。所以這不是「預編譯」，而是「只增不改」的追加式注入。
 
 這裡有一個容易誤解的點值得澄清：「追加到末尾」只發生在工具被發現的那一輪。此後這個 schema 塊就固定在軌跡中的原位置——後續輪次的新訊息追加在它**之後**，它本身成為普通的歷史訊息，而不是每輪都被重新搬運到最新的末尾。
 

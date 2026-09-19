@@ -701,7 +701,7 @@ Step 5: Verification
 [^ch2-toolsearch-cc]: Anthropic, "Scale with MCP tool search", Claude Code 文档. https://code.claude.com/docs/en/mcp
 [^ch2-toolsearch-codex]: OpenAI Codex CLI 源码，`codex-rs/core/templates/search_tool/tool_description.md`——该模板告知模型：部分工具并未预先提供，需要用 `tool_search` 搜索并加载。
 
-为什么追加到末尾就不破坏缓存？这正是前文 KV Cache 前缀性质的直接推论：因果注意力决定了每个 token 的键值对只依赖它之前的 token，因此在末尾追加新内容不会改变任何已缓存 token 的 K、V——新增的工具 schema 只需在首次出现时计算一次（一次性的缓存写入），此后就并入不断增长的“前缀”，在后续所有轮次持续命中。所以这不是“预编译”，而是“只增不改”的追加式注入。
+为什么追加到末尾就不破坏缓存？这正是前文 KV Cache 前缀性质的直接推论：因果注意力决定了每个 token 在每一层的隐状态（以及由它算出的 K、V）只依赖该 token 自身和它之前的 token，与后面的 token 无关，因此在末尾追加新内容不会改变任何已缓存 token 的 K、V——新增的工具 schema 只需在首次出现时计算一次（一次性的缓存写入），此后就并入不断增长的“前缀”，在后续所有轮次持续命中。所以这不是“预编译”，而是“只增不改”的追加式注入。
 
 这里有一个容易误解的点值得澄清：“追加到末尾”只发生在工具被发现的那一轮。此后这个 schema 块就固定在轨迹中的原位置——后续轮次的新消息追加在它**之后**，它本身成为普通的历史消息，而不是每轮都被重新搬运到最新的末尾。
 

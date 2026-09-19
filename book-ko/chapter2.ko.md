@@ -703,7 +703,7 @@ Claude Code의 도구 정의를 보면 각 설명이 사용 경계(“NEVER invo
 [^ch2-toolsearch-cc]: Anthropic, "Scale with MCP tool search", Claude Code documentation. https://code.claude.com/docs/en/mcp
 [^ch2-toolsearch-codex]: OpenAI Codex CLI source, `codex-rs/core/templates/search_tool/tool_description.md`: "Some of the tools may not have been provided to you upfront, and you should use this tool (tool_search) to search for the required tools and load them."
 
-끝에 추가해도 캐시가 깨지지 않는 이유는 무엇일까요? 앞에서 설명한 KV Cache의 접두부 속성에서 바로 답을 얻을 수 있습니다. 인과적 어텐션에서는 각 토큰의 Key-Value 쌍이 앞선 토큰에만 의존하므로 끝에 새 콘텐츠를 추가해도 이미 캐시한 토큰의 K와 V는 바뀌지 않습니다. 새로 추가한 도구 스키마는 처음 나타날 때 한 번 계산되어 일회성 캐시 쓰기가 일어나고, 이후 계속 늘어나는 “접두부”에 합류하여 다음 라운드마다 캐시에 적중합니다. 이는 “사전 컴파일”이 아니라 추가 전용 주입입니다.
+끝에 추가해도 캐시가 깨지지 않는 이유는 무엇일까요? 앞에서 설명한 KV Cache의 접두부 속성에서 바로 답을 얻을 수 있습니다. 인과적 어텐션에서는 각 토큰의 각 계층 은닉 상태(그리고 그로부터 계산되는 K와 V)가 그 토큰 자신과 앞선 토큰에만 의존하고 뒤따르는 토큰과는 무관하므로 끝에 새 콘텐츠를 추가해도 이미 캐시한 토큰의 K와 V는 바뀌지 않습니다. 새로 추가한 도구 스키마는 처음 나타날 때 한 번 계산되어 일회성 캐시 쓰기가 일어나고, 이후 계속 늘어나는 “접두부”에 합류하여 다음 라운드마다 캐시에 적중합니다. 이는 “사전 컴파일”이 아니라 추가 전용 주입입니다.
 
 “끝에 추가”되는 것은 도구를 발견한 라운드뿐입니다. 그 뒤로 스키마 블록은 궤적의 원래 위치에 고정되고, 새 메시지는 그 뒤에 추가됩니다. 라운드마다 스키마를 가장 최근 끝으로 다시 옮기지는 않습니다.
 
