@@ -577,7 +577,7 @@ Inti dari pilihan desain ini adalah bahwa **dalam merancang arsitektur Agent, ek
 
 ### KV Cache Tidak Harus Sekali Pakai: "Catatan" yang Dapat Diedit dan Disusun
 
-(Bagian berikut adalah materi riset lanjutan yang bersifat opsional. Pembaca dapat melewatinya pada bacaan pertama; tiga kesimpulan praktis di atas tetap menjadi dasar untuk sistem produksi saat ini.)
+(Bagian berikut adalah materi riset lanjutan yang bersifat opsional. Pembaca dapat melewatinya pada bacaan pertama (langsung lompat ke subbagian berikutnya); tiga kesimpulan praktis di atas tetap menjadi dasar untuk sistem produksi saat ini.)
 
 Sejauh ini kita mengasumsikan aturan ketat: ubah satu byte pada prefix, maka cache setelahnya tidak berlaku. Aturan ini benar untuk engine inferensi saat ini, tetapi mungkin bukan sesuatu yang niscaya. Sebuah jalur riset terbaru berangkat dari pengamatan yang berlawanan dengan intuisi[^ch2-2]: selama fase prefill, model bekerja seolah-olah sedang "mencatat". Ketika membaca sebuah field dalam context, misalnya `Kota pengguna: Beijing`, model tidak sekadar menyimpan field itu secara mentah. Model juga menuliskan representasi dari **kesimpulan** field tersebut ke state KV di bagian hilir. Pengukuran menunjukkan bahwa state KV milik token field itu sendiri sering menyumbang kurang dari 1% terhadap keputusan akhir; pengaruh yang lebih besar justru datang dari "catatan" yang ditinggalkan di bagian hilir.
 
@@ -588,6 +588,8 @@ Sebuah perumpamaan: ketika membaca dokumen tebal, Anda tidak akan membaca ulang 
 Bagi Agent, arti penting hal ini terletak pada: konteks panjang yang berulang kali dibangun ulang itu—berganti sekumpulan tool, memperbarui satu field memori, menyuntikkan satu state baru (persis yang akan dikerjakan bilah status di bagian berikutnya)—barangkali tak perlu dirobohkan dan disusun ulang setiap putaran. Ia menunjuk pada satu kemungkinan "konteks berubah, tetapi manfaat cache tetap ada": mengubah perakitan konteks dari perhitungan ulang berkompleksitas $O(L^2)$ menjadi "perangkaian catatan" berkompleksitas $O(L)$. Ini masih berada pada tahap riset; tiga simpulan praktis di bagian depan tadi tetap merupakan prinsip baku yang harus dipegang pada sistem produksi saat ini.
 
 [^ch2-2]: Li, Bojie. *Models Take Notes at Prefill: KV Cache Can Be Editable and Composable.* arXiv:2606.17107, 2026.
+
+### Menjembatani: Dari Mekanisme Cache ke Perancangan Isi Konteks
 
 Setelah memahami mekanisme cache, pertanyaan berikutnya muncul dengan sendirinya: karena kini kita tahu bagaimana konteks diproses dan di-cache, bagaimana seharusnya isi yang kita kirimkan itu sendiri dirancang? Beberapa bagian berikut berkisar pada "apa sebenarnya yang diletakkan di dalam konteks dan bagaimana menatanya", dan dapat dipilah menjadi tiga jalur yang relatif berdiri sendiri:
 

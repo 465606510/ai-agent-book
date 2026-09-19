@@ -575,7 +575,7 @@ La práctica de Claude Code revela un patrón profundo: cuando los beneficios ec
 La idea central de estas decisiones de diseño es la siguiente: **al diseñar la arquitectura de un Agente, la economía de la caché no es una optimización posterior, sino una restricción previa**. Cuanto antes se incorpore esta restricción al diseño arquitectónico, menor será el coste de ingeniería posterior.
 ### La Caché KV No Es Necesariamente de Un Solo Uso: "Notas" Editables y Componibles
 
-(Lo que sigue es material avanzado y opcional, procedente de la investigación más reciente. Puede saltarse en una primera lectura sin que ello afecte al resto del capítulo; las tres conclusiones prácticas anteriores son la base que sí conviene dominar.)
+(Lo que sigue es material avanzado y opcional, procedente de la investigación más reciente. Puede saltarse en una primera lectura (pasando directamente a la siguiente subsección) sin que ello afecte al resto del capítulo; las tres conclusiones prácticas anteriores son la base que sí conviene dominar.)
 
 Hasta aquí, toda la sección se ha apoyado en una regla estricta: si cambia un solo byte del prefijo, la caché posterior queda invalidada. Esa regla se cumple en los motores de inferencia actuales, pero no tiene por qué ser inevitable. Una línea de investigación reciente parte de una observación contraintuitiva[^ch2-2]: durante la fase de prefill el modelo se comporta como si estuviera **tomando notas**. Cuando lee un campo del contexto (por ejemplo, «Ciudad del usuario: Pekín») no se limita a cachearlo literalmente, sino que escribe en los estados KV posteriores representaciones de la **conclusión** — de lo que ese campo significa. Las mediciones muestran que los estados KV de los tokens **del propio campo** suelen aportar menos del 1 % a la decisión final; lo que realmente pesa son las notas que quedaron aguas abajo.
 
@@ -586,6 +586,8 @@ La analogía de las notas al margen ayuda aquí. Al leer un documento extenso na
 Para los Agentes, la implicación es que un contexto largo no siempre tiene que derribarse y reconstruirse cuando cambian las herramientas, un campo de memoria o un estado de ejecución (justamente lo que hará la barra de estado de la sección siguiente). En principio, esto permitiría un contexto mutable conservando parte del beneficio de la caché, y convertiría el ensamblado del contexto de un recálculo O(L²) en un empalme de notas O(L). Sigue siendo trabajo en fase de investigación; las tres conclusiones prácticas de esta sección continúan siendo los principios por defecto para los sistemas en producción de hoy.
 
 [^ch2-2]: Li, Bojie. *Models Take Notes at Prefill: KV Cache Can Be Editable and Composable.* arXiv:2606.17107, 2026.
+
+### Transición: Del Mecanismo de Caché al Diseño del Contenido del Contexto
 
 Comprendido el mecanismo de caché, la cuestión siguiente es: sabiendo cómo se procesa y almacena el contexto, ¿cómo debemos diseñar el contenido que introducimos en él? Las siguientes secciones abordan la organización del contenido a través de tres líneas de trabajo independientes:
 

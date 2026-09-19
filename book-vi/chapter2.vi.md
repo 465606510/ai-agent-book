@@ -576,7 +576,7 @@ Việc thực hành Claude Code cho thấy một mô hình sâu sắc: khi lợi
 
 ### KV Cache Không nhất thiết phải dùng một lần: các “ghi chú” có thể chỉnh sửa, tổng hợp được
 
-(Sau đây là bài đọc mở rộng từ biên giới nghiên cứu, là "bài đọc chọn lọc ở vùng nước sâu". Bạn có thể bỏ qua trong lần đọc đầu tiên mà không ảnh hưởng đến việc hiểu nội dung tiếp theo của chương này; ba kết luận thực tế trước đó là nền tảng cần phải nắm vững.)
+(Sau đây là bài đọc mở rộng từ biên giới nghiên cứu, là "bài đọc chọn lọc ở vùng nước sâu". Bạn có thể bỏ qua trong lần đọc đầu tiên (chuyển thẳng sang tiểu mục tiếp theo) mà không ảnh hưởng đến việc hiểu nội dung tiếp theo của chương này; ba kết luận thực tế trước đó là nền tảng cần phải nắm vững.)
 
 Phần này cho đến nay dựa trên một quy tắc sắt: nếu bạn thay đổi một byte trong tiền tố, tất cả bộ đệm tiếp theo sẽ bị hủy. Định luật sắt này đúng trong các công cụ suy luận ngày nay, nhưng tôi muốn chỉ ra rằng nó không nhất thiết **không thể tránh khỏi**. Điểm khởi đầu để nới lỏng nó là một quan sát phản trực giác [^ch2-2]: Trong giai đoạn điền trước, mô hình thực sự đang "ghi chú". Khi đọc một trường nhất định trong ngữ cảnh (chẳng hạn như "Thành phố của người dùng: Bắc Kinh"), nó không lưu trường đó nguyên vẹn vào bộ nhớ đệm mà ghi **kết luận** về "trường này có ý nghĩa gì" vào trạng thái KV của mỗi lớp tiếp theo. Các phép đo đã phát hiện ra rằng KV của các mã thông báo riêng của một trường thường đóng góp ít hơn 1% vào quyết định cuối cùng - điều thực sự ảnh hưởng đến đầu ra là "ghi chú đọc" mà nó để lại ở cuối dòng.
 
@@ -587,6 +587,8 @@ Hãy sử dụng một phép tương tự: khi bạn đọc một tài liệu d�
 Đối với Agent, tầm quan trọng của việc này là ngữ cảnh dài được xây dựng lại nhiều lần - thay đổi một loạt công cụ, cập nhật trường bộ nhớ, đưa vào một trạng thái mới (đó là những gì phần tiếp theo của thanh trạng thái sẽ thực hiện) - có thể không cần phải xây dựng lại mỗi lần. Nó chỉ ra khả năng "ngữ cảnh có thể thay đổi, nhưng lợi ích của bộ đệm vẫn còn đó": thay đổi tập hợp ngữ cảnh từ tính toán lại O(L²) thành O(L) "nối ghi chú". Điều này vẫn đang trong giai đoạn nghiên cứu và ba kết luận thực tế trong phần này vẫn là những nguyên tắc mặc định cần được tuân theo trong hệ thống sản xuất hiện tại.
 
 [^ch2-2]: Li, Bojie. *Models Take Notes at Prefill: KV Cache Can Be Editable and Composable.* arXiv:2606.17107, 2026.
+
+### Chuyển tiếp: từ cơ chế bộ nhớ đệm đến thiết kế nội dung ngữ cảnh
 
 Sau khi hiểu cơ chế bộ nhớ đệm, câu hỏi tiếp theo đương nhiên sẽ trở thành: Bây giờ chúng ta đã biết ngữ cảnh được xử lý và lưu trữ như thế nào, chúng ta nên thiết kế nội dung như thế nào? Một số phần tiếp theo tập trung vào "nên đặt nội dung gì vào ngữ cảnh và cách tổ chức nó", có thể chia thành ba manh mối tương đối độc lập:
 

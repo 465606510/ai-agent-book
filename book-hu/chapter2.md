@@ -579,7 +579,7 @@ A tervezési döntések központi tanulsága, hogy **egy Agent architektúrájá
 
 ### A KV Cache Nem Feltétlenül Egyszeri: Szerkeszthető, Összeállítható "Jegyzetek"
 
-(A következők opcionális, haladó anyag a jelenlegi kutatásból. Első olvasásra kihagyható anélkül, hogy a fejezet hátralévő részét érintené; a fenti három gyakorlati következtetés az alap.)
+(A következők opcionális, haladó anyag a jelenlegi kutatásból. Első olvasásra kihagyható (közvetlenül a következő alszakaszra ugorva) anélkül, hogy a fejezet hátralévő részét érintené; a fenti három gyakorlati következtetés az alap.)
 
 Eddig ez a szakasz egy szigorú szabályt feltételezett: változtass meg egy bájtot az előtagban, és az azt követő gyorsítótár érvénytelenül. Ez a szabály a mai következtető motorokban érvényes, de nem feltétlenül elkerülhetetlen. Egy friss kutatási irány egy ellentmondásos megfigyelésből indul ki[^ch2-2]: a prefill fázisban a modell úgy viselkedik, mintha "jegyzeteket készítene." Amikor elolvas egy mezőt a kontextusban (pl. "Felhasználó városa: Peking"), nem egyszerűen szó szerint gyorsítótárazza azt a mezőt. Ehelyett lejjebb írja a "következtetés" downstream reprezentációit – hogy mit jelent ez a mező – a későbbi KV állapotokba. A mérések azt mutatják, hogy a mező "saját" tokenjeinek KV állapotai gyakran kevesebb mint 1%-ban járulnak hozzá a végső döntéshez; ami jobban befolyásolja a kimenetet, azok a mező által hátrahagyott downstream "jegyzetek."
 
@@ -590,6 +590,8 @@ A lapszéli jegyzet analógia hasznos itt. Amikor egy hosszú dokumentumot olvas
 Az ügynökök számára a következmény az, hogy a hosszú kontextusoknak nem mindig kell lebontani és újraépíteni, amikor az eszközök, memóriamezők vagy futásidejű állapot megváltozik. Elvben ez változtatható kontextust tehet lehetővé, miközben megőrzi a gyorsítótárazás előnyeit, a kontextus összeállítását O(L²) újraszámításról O(L) jegyzet-összeillesztésre változtatva. Ez még kutatási stádiumban lévő munka; a szakaszban korábban bemutatott három gyakorlati következtetés marad az alapelv a jelenlegi production rendszerek számára.
 
 [^ch2-2]: Li, Bojie. *Models Take Notes at Prefill: KV Cache Can Be Editable and Composable.* arXiv:2606.17107, 2026.
+
+### Kitekintés: A Gyorsítótár Mechanikájától a Kontextus Tartalmának Tervezéséig
 
 Most, hogy megértettük, hogyan dolgozzák fel és gyorsítótárazza a kontextust, a következő kérdés az, hogyan tervezzük meg magát a tartalmat. A következő szakaszok azt tárgyalják, hogy mi tartozik a kontextusba és hogyan szervezzük azt, három összefüggő szál mentén:
 

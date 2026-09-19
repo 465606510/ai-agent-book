@@ -346,7 +346,7 @@ test('Chapter 2 preserves all editions, figures, outlines, and chapter isolation
     );
     const content = html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/)[1];
     assert.equal(count(content, 'img'), 17, edition.lang);
-    assert.equal(count(content, 'h3'), 31, edition.lang);
+    assert.equal(count(content, 'h3'), 32, edition.lang);
     assert.ok(
       html.includes(
         `data-chapter-key="ai-agents-in-depth:${edition.lang}:chapter2"`,

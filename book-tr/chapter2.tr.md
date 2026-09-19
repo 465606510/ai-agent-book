@@ -575,7 +575,7 @@ Bu tasarım kararlarının temel çıkarımı şudur: **bir Agent mimarisi tasar
 
 ### KV Cache Zorunlu Olarak Tek Seferlik Değildir: Düzenlenebilir, Birleştirilebilir "Notlar"
 
-(Aşağıdaki içerik, araştırma cephesinden ek okumadır—isteğe bağlı ileri düzey materyal. İlk okumada atlanabilir, bu bölümün geri kalanının anlaşılmasını etkilemez; yukarıdaki üç pratik sonuç, kavranması gereken temeldir.)
+(Aşağıdaki içerik, araştırma cephesinden ek okumadır—isteğe bağlı ileri düzey materyal. İlk okumada atlanabilir (doğrudan bir sonraki alt bölüme geçilebilir), bu bölümün geri kalanının anlaşılmasını etkilemez; yukarıdaki üç pratik sonuç, kavranması gereken temeldir.)
 
 Buraya kadar bu bölüm, katı bir kurala dayandırılarak inşa edildi: ön ekte bir bayt değiştirin, sonraki tüm cache geçersiz olur. Bu kural günümüzün çıkarım motorlarında geçerlidir, ama yazar bunun zorunlu olarak **kaçınılmaz** olmadığını belirtmek istiyor. Bunu gevşetmenin başlangıç noktası, sezgiye aykırı bir gözlemdir[^ch2-2]: prefill aşamasında model aslında "not tutuyor". Context'te bir alanı okuduğunda (örn. "Kullanıcının şehri: Pekin"), o alanı olduğu gibi önbelleğe almaz; bunun yerine, ilerledikçe **sonucu**—"bu alanın ne anlama geldiğini"—her sonraki katmanın KV durumlarına yazar. Ölçümler, alanın **kendi** birkaç token'ının KV'sinin nihai karara genellikle %1'den az katkıda bulunduğunu gösteriyor—çıktıyı gerçekten etkileyen şey, alt katmanlarda bıraktığı "okuma notlarıdır".
 
@@ -586,6 +586,8 @@ Bir benzetme yapmak gerekirse: kalın bir doküman okurken, bir gerçeği her de
 Agent'lar için önemi şudur: tekrar tekrar yeniden inşa edilen uzun context—bir araç kümesini değiştirmek, bir bellek alanını güncellemek, yeni bir durum enjekte etmek (tam olarak bir sonraki bölümün durum çubuğu hakkında yapacağı şey)—her turda yıkılıp yeniden inşa edilmesi gerekmeyebilir. Bu, "değiştirilebilir olan ama önbellekleme faydalarının kaldığı context" olasılığına işaret ediyor: context montajını O(L²) yeniden hesaplamadan O(L) "not ekleme"ye dönüştürmek. Bu hâlâ araştırma aşamasındadır; bu bölümdeki önceki üç pratik sonuç, günümüz üretim sistemlerinde izlenecek varsayılan ilkeler olarak kalmaya devam ediyor.
 
 [^ch2-2]: Li, Bojie. *Models Take Notes at Prefill: KV Cache Can Be Editable and Composable.* arXiv:2606.17107, 2026.
+
+### İleriye Bakış: Önbellek Mekanizmasından Context İçeriğinin Tasarımına
 
 Artık context'in nasıl işlendiğini ve önbelleğe alındığını bildiğimize göre, doğal bir sonraki soru içeriğin kendisinin nasıl tasarlanacağıdır. Aşağıdaki bölümler, context'e tam olarak nelerin girdiği ve bunun nasıl organize edileceği etrafında, birbirinden nispeten bağımsız üç konu üzerinden ilerler:
 
