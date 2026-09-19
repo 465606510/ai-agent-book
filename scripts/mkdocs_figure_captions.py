@@ -12,128 +12,96 @@ online edition). Waiting for the browser to fix that up is not enough: the
 caption has to be in the served HTML for search engines, screen readers,
 "view source", and the no-JavaScript case.
 
-This hook rewrites such lines *before* Python-Markdown runs (MkDocs runs every
-`on_page_markdown` hook before parsing):
+This hook rewrites the *rendered* HTML (`on_page_content`, i.e. after
+Python-Markdown has run). A lone image line always comes out of
+Python-Markdown as a paragraph holding nothing but the `<img>`:
 
-    ![图0-2 全书结构](images/fig0-2.svg)
+    <p><img alt="图0-2 全书结构" src="images/fig0-2.svg" /></p>
       ->  <figure class="md-typeset-figure">
-          <img src="images/fig0-2.svg" alt="图0-2 全书结构">
+          <img alt="图0-2 全书结构" src="images/fig0-2.svg" />
           <figcaption>图0-2 全书结构</figcaption>
           </figure>
 
-The `<figure>` is emitted as finished HTML rather than with `markdown="1"`, for
-two reasons:
+Working on the HTML rather than the Markdown is what keeps the 23 experiment
+figures of each edition inside their experiment box. Those are written as
 
-* inside a blockquote, `md_in_html` never processes the nested figure, so the
-  attribute survived into the page and the `<figcaption>` came out wrapped in a
-  `<p>` (both verified in a real build);
-* it keeps the caption verbatim — the book's captions are plain single-line text
-  (no emphasis or links), so nothing is lost, and no stray Pandoc attribute can
-  end up printed inside the caption.
+    > **实验 8-2 ★★：…**
+    >
+    > ![图8-7 …](images/fig8-7.svg)
+    >
+    > 正文 …
 
-The caption is never invented: it is the label the author already wrote in the
-alt text, so numbering stays identical to the PDF/EPUB and to every translated
-edition.
+and Python-Markdown offers no Markdown-level shape that puts a `<figure>`
+directly inside a `<blockquote>`: raw HTML on a quoted line is treated as
+inline HTML (`<p><figure>`, caption wrapped in a `<p>`), and `md_in_html`'s
+`markdown="1"` is never processed inside a quote, so the earlier
+Markdown-level version of this hook had to drop the `>` marker and the quote
+bar broke around every experiment figure. Once the page is HTML the quoted
+image is just `<blockquote>…<p><img …></p>…</blockquote>` and can be wrapped
+in place, so the experiment box stays one unbroken blockquote.
 
-Run this hook AFTER `mkdocs_pandoc_strip.py` (see mkdocs.yml): the image line
-must already be free of Pandoc attributes (`{height=55%}`), because the `src`
-written here is final and any leftover attribute would be printed verbatim.
+The `<img>` tag is kept exactly as Python-Markdown emitted it, and the
+caption is the alt text verbatim: it is the label the author already wrote,
+so numbering stays identical to the PDF/EPUB and to every translated edition.
+Python-Markdown has already HTML-escaped the alt attribute (`&amp;`, `&lt;`,
+`&quot;`), and every such entity is equally valid as element text, so the
+caption is safe to copy as-is.
 
-Images inside a blockquote (`> ![图8-7 …](…)`, the 23 experiment figures of
-each edition) lose their quote marker and render as plain centered figures like
-every other figure. Python-Markdown offers no shape that avoids this: a figure
-quoted line comes out as `<p><figure>` with its `<figcaption>` wrapped in a
-`<p>` (inside a blockquote every block is parsed as a paragraph), and with
-`markdown="1"` the attribute and the extra `<p>` both reached the served HTML.
-Every such line is a standalone blockquote, so no prose is disturbed; the only
-visible effect is that the surrounding quote bar breaks where the figure sits.
-Images that are inline inside a sentence (Vietnamese chapter 2) are left alone,
-since splitting their paragraph would reflow prose.
+Images that sit inside a sentence (Vietnamese chapter 2) produce a `<p>` with
+other content around the `<img>`, so they never match and their prose is not
+reflowed. Image syntax inside a code block is rendered as `<code>` text, not
+an `<img>`, so it is never touched either.
+
+`mkdocs_pandoc_strip.py` still has to run as a Markdown hook (it removes the
+`{height=55%}` Pandoc attributes before Python-Markdown sees them); this hook
+runs at a later stage regardless of its position in `hooks:`.
 """
 
 import re
 
-# A whole line that is nothing but one Markdown image, optionally in a
-# blockquote, optionally indented, and optionally carrying Pandoc attributes
-# that `mkdocs_pandoc_strip` has not removed yet. Inline images
-# (`… text ![img](x.svg) more text`) never match.
+# The shape of a figure line in the book sources: a whole line that is nothing
+# but one Markdown image, optionally in a blockquote, optionally indented, and
+# optionally carrying Pandoc attributes. Not used by the hook itself (which
+# works on HTML) but by the tests, to audit that every figure of every edition
+# carries its label in the alt text that becomes the caption.
 _IMAGE_LINE = re.compile(
     r"^[ \t]*(?P<quote>>[ \t]?)?[ \t]*"
     r"(?P<image>!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]+)\))"
     r"[ \t]*(?P<attrs>\{[^}]*\})?[ \t\r]*$"
 )
 
+# A rendered paragraph that holds exactly one image and nothing else. This is
+# what Python-Markdown emits for a standalone image line, inside or outside a
+# blockquote / admonition. Attributes stay in whatever order and form
+# Python-Markdown produced them (`src`, `alt`, and anything `attr_list` added).
+_IMAGE_PARAGRAPH = re.compile(
+    r"<p>[ \t]*(?P<img><img\b(?P<attrs>[^<>]*?)\s*/?>)[ \t]*</p>",
+)
 
-_IMAGE_HTML = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]+)\)")
-
-
-def _escape(text: str) -> str:
-    """Escape the few characters that could break out of an HTML attribute."""
-    return (
-        text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
-    )
-
-
-def _figure_block(alt: str, src: str) -> list[str]:
-    """The `<figure>` lines as they go into the page (indentation is applied by
-    the caller when the image was an indented list item)."""
-    return [
-        '<figure class="md-typeset-figure">',
-        f'<img src="{_escape(src)}" alt="{_escape(alt)}">',
-        f"<figcaption>{_escape(alt)}</figcaption>",
-        "</figure>",
-    ]
+_ALT_ATTR = re.compile(r'\balt="(?P<alt>[^"]*)"')
 
 
-def _indent(lines: list[str]) -> list[str]:
-    """Indent a block so it nests in the list item or admonition it belongs to."""
-    return ["  " + line if line else "" for line in lines]
+def _figure_html(img: str, alt: str) -> str:
+    return f'<figure class="md-typeset-figure">\n{img}\n<figcaption>{alt}</figcaption>\n</figure>'
 
 
-def _transform(markdown: str) -> str:
-    lines = markdown.split("\n")
-    out: list[str] = []
-    in_fence = False
-
-    for line in lines:
-        stripped = line.lstrip()
-        if stripped.startswith(("```", "~~~")):
-            # Fenced code: image syntax in it is an example, not a figure.
-            in_fence = not in_fence
-            out.append(line)
-            continue
-        if in_fence:
-            out.append(line)
-            continue
-
-        match = _IMAGE_LINE.match(line)
-        if not match:
-            out.append(line)
-            continue
-
-        # `mkdocs_pandoc_strip` runs first (see mkdocs.yml), so there must be no
-        # Pandoc attribute left on the line. If the order ever flips, leave the
-        # line alone instead of emitting a broken `src`.
-        image = _IMAGE_HTML.fullmatch(match.group("image"))
-        if image is None or match.group("attrs"):
-            out.append(line)
-            continue
-
-        block = _figure_block(image.group("alt"), image.group("src"))
-
-        if line.startswith((" ", "\t")):
-            out.extend(_indent(block))
-        else:
-            out.extend(block)
-
-    return "\n".join(out)
+def _wrap(match: re.Match) -> str:
+    alt = _ALT_ATTR.search(match.group("attrs"))
+    if alt is None or not alt.group("alt").strip():
+        # No caption to show: leave the bare image as it was.
+        return match.group(0)
+    return _figure_html(match.group("img"), alt.group("alt"))
 
 
-def on_page_markdown(markdown, **kwargs):
+def _transform(html: str) -> str:
+    return _IMAGE_PARAGRAPH.sub(_wrap, html)
+
+
+def on_page_content(html, **kwargs):
     """MkDocs hook entry point (see module docstring)."""
-    if not markdown:
-        return markdown
-    return _transform(markdown)
+    if not html:
+        return html
+    return _transform(html)
 
 
 def iter_figure_files(root):

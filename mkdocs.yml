@@ -25,11 +25,11 @@ hooks:
   - scripts/mkdocs_pandoc_strip.py
   # Wrap every standalone book figure in <figure>/<figcaption> so the label the
   # author already wrote in the image alt text ("图0-2 …", "Figure 0-2: …")
-  # becomes a visible caption on the reading site. Must run AFTER the Pandoc
-  # strip above: by the time this hook runs the figure is raw HTML that the
-  # strip hook can no longer reach, so a leftover `{height=55%}` would be
-  # printed as literal text in the caption. See the module docstring for why
-  # this is a build-time hook rather than a browser script.
+  # becomes a visible caption on the reading site. Works on the rendered HTML
+  # (on_page_content), which is what lets the experiment figures stay inside
+  # their `> ` blockquote box; the Pandoc strip above is a Markdown-stage hook,
+  # so it has always run by then whatever the order here. See the module
+  # docstring for why this is a build-time hook rather than a browser script.
   - scripts/mkdocs_figure_captions.py
   - scripts/seo_meta.py
   # Splits the search plugin's single 55 MB search_index.json into one file
