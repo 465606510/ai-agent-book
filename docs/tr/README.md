@@ -89,6 +89,33 @@ Kitap, **Agent = LLM + Bağlam + Araçlar** temel formülü etrafında şekillen
 
 > 🧪 Deneylerin yürütme durumu, kanıtları ve karşılanmamış kabul koşulları ayrı olarak [`EXPERIMENT_STATUS.md`](../EXPERIMENT_STATUS.md) dosyasında izlenir; kaynak kodu klonlamak veya kurmak deneyin tamamlandığını kanıtlamaz.
 
+## ❓ Sık Sorulan Sorular
+
+**S: PDF / EPUB var mı? Kendim derlemem gerekiyor mu?**
+Gerekmiyor. [E-Kitap](#-e-kitap) bölümünde 15 dildeki PDF / EPUB indirme bağlantıları listelenir ve bunlar her zaman main dalının en son derlemesine işaret eder; kitabı [çevrimiçi](https://bojieli.github.io/ai-agent-book/) de okuyabilirsiniz. Yalnızca metni değiştirip yeniden dizmek istiyorsanız kendiniz derlemeniz gerekir.
+
+**S: Bu kitabı okumak için hangi ön bilgiler gerekir?**
+Giriş bölümündeki "Ön Koşullar" kısmı bunu tam olarak açıklar: orta karmaşıklıkta Python kodunu okuyup değiştirebilmek; ChatGPT, Claude gibi LLM ürünlerini kullanmış olmak; en az bir AI destekli kodlama aracına (Claude Code, Codex, Cursor vb.) aşina olmak; komut satırı, Git, JSON, REST API gibi yazılım mühendisliği temellerini bilmek. 8. bölümdeki post-training dışında kitabın matematik ve makine öğrenimi gereksinimi çok düşüktür.
+
+**S: Çok fazla bilgi var, okuduktan sonra unutuyorum; nasıl sindirebilirim?**
+Yalnızca metni okumayın. Önerilen yol, her bölümün deneylerini kendi elinizle yapmaktır — eşlik eden kodu okumak değil, kitaptaki tasarım ilkelerini anladıktan sonra bir coding agent yardımıyla sıfırdan yeniden uygulamak, çıktıyı gözlemlemek ve beklentiye uymayan yerleri ayıklamak. Her bölümün sonundaki düşünce soruları da iyi bir öz değerlendirmedir. Daha sistemli bir yol için [Öğrenme Önerileri](LEARNING.md) sayfasına bakın. Bir okurun özeti çok yerinde: önce kitabı inceltin, sonra kalınlaştırın, sonra yeniden inceltin.
+
+**S: Deney kodunu satır satır anlamam gerekiyor mu?**
+Gerekmiyor. Kitaba eşlik eden kodun tamamı coding agent'lar tarafından kitap metnine göre üretildi; yazar da bunu satır satır okumuyor. Önemli olan mimariyi, temel bileşenleri ve tasarım ilkelerini netleştirmek, ardından kodu yazmayı, testleri çalıştırmayı ve hataları düzeltmeyi AI'ya bırakmaktır; insan ilk tasarımdan ve son kabulden sorumludur.
+
+**S: Düşünce sorularının örnek cevapları var mı?**
+Var: [`book/reference-answers.md`](../../book/reference-answers.md) ([çevrimiçi sürüm](https://bojieli.github.io/ai-agent-book/book/reference-answers/)). Bunlar yalnızca referanstır, standart cevap değildir; farklı görüşlerinizi Discussions'ta tartışmaktan çekinmeyin.
+
+**S: Kitabı bitirdikten sonra hayata geçirebileceğim bir uygulama projesi var mı?**
+Claude Code veya Codex benzeri bir coding agent'ı sıfırdan yapmanızı öneririz: 1–5. bölümler kullanılabilir bir coding agent yapmak için yeterlidir; 7. ve 9. bölümler ona bir değerlendirme kümesi kurmanıza ve başarısız örneklerden sürekli iyileştirmenize yardım eder; 8. bölüm modelin kendisine müdahale eder; 6. ve 10. bölümler ses, Computer Use gibi etkileşim biçimleri ve çoklu Agent iş birliği ekler. Değerlendirme, gözlemlenebilirlik ve güvenilirlik gibi mühendislik adımlarına 7. bölümdeki değerlendirme deneylerinden başlayabilirsiniz: önce kendi agent'ınız için on-on beş görevlik küçük bir değerlendirme kümesi kurun, sonra başarısız örnekler etrafında iyileştirme yapın.
+
+**S: Soruları ve tartışmaları nereye yazabilirim?**
+- Metin hataları, deney bug'ları, çeviri sorunları: bir [Issue](https://github.com/bojieli/ai-agent-book/issues) açın; lütfen bölümü, alt bölümü ve ilgili cümleyi belirtin.
+- Okuma soruları, düşünce sorularının tartışılması, deneyim paylaşımı, kaynak önerileri: lütfen [GitHub Discussions](https://github.com/bojieli/ai-agent-book/discussions) kullanın.
+
+**S: Bir hata buldum ve düzeltmek istiyorum, ne yapmalıyım?**
+Doğrudan PR göndermeniz memnuniyetle karşılanır. Çince sürüm [`book/`](../../book/) ana kaynaktır; diğer diller Çince'den senkronize edilir. Metni değiştirirken yalnızca Çince sürümü değiştirip PR'da açıklamanız yeterlidir; çeviriler birleştirmeden sonra toplu olarak senkronize edilir. Ayrıntılar için [Katkıda Bulunma](#-katkıda-bulunma) bölümüne bakın.
+
 ## 📦 Ek · Harici Depoların Temin Edilmesi
 
 Bölüm 6, 7, 9, 10'daki değerlendirme kıstasları, eğitim çerçeveleri ve robot platformları için 23 harici depo (boyut ve lisanslama nedeniyle) **pakete dahil değildir** ve karşılık gelen dizinlere klonlanması gerekir.

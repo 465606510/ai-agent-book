@@ -99,6 +99,33 @@ A modellt használó kísérletekhez legalább egy szolgáltatói API-kulcs szü
 
 > 🧪 A kísérletek futtatási állapotát, bizonyítékait és még teljesítendő kapuit külön az [`EXPERIMENT_STATUS.md`](../EXPERIMENT_STATUS.md) tartalmazza; a forráskód klónozása vagy telepítése önmagában nem igazolja a kísérlet befejezését.
 
+## ❓ Gyakori kérdések
+
+**K: Van PDF / EPUB? Magamnak kell buildelnem?**
+Nem kell. Az [E-könyv](#-e-könyv) szakasz 15 nyelven sorolja fel a PDF / EPUB letöltési hivatkozásokat, amelyek mindig a main ág legfrissebb buildjére mutatnak; a könyv [online is olvasható](https://bojieli.github.io/ai-agent-book/). Saját buildre csak akkor van szükség, ha módosítani szeretnéd a szöveget, és újra akarod tördelni.
+
+**K: Milyen előismeretek szükségesek a könyv olvasásához?**
+A bevezető „Előfeltételek” szakasza részletesen leírja: közepesen összetett Python-kód olvasása és módosítása; tapasztalat LLM-termékek, például a ChatGPT vagy a Claude használatában; legalább egy AI-alapú kódolóeszköz (Claude Code, Codex, Cursor stb.) ismerete; szoftvermérnöki alapismeretek, mint a parancssor, a Git, a JSON és a REST API-k. A 8. fejezet utótanításán (post-training) kívül a könyv matematikai és gépi tanulási követelményei nagyon alacsonyak.
+
+**K: Sok az ismeret, és olvasás után elfelejtem – hogyan emészthető meg?**
+Ne csak a főszöveget olvasd. A javasolt módszer, hogy minden fejezet kísérleteit saját kezűleg végezd el – nem a kapcsolódó kód nézegetésével, hanem úgy, hogy a könyvben leírt tervezési elvek megértése után egy coding agent segítségével a nulláról újra megvalósítod, megfigyeled a kimenetet, és felderíted, hol tér el a várttól. A fejezetek végén található gondolatébresztő kérdések is jó önellenőrzést adnak. A rendszerezettebb útvonalat a [Tanulási javaslatok](LEARNING.md) tartalmazza. Egy olvasó összegzése nagyon találó: először olvasd vékonyra a könyvet, aztán vastagra, aztán újra vékonyra.
+
+**K: A kísérletek kódját soronként meg kell értenem?**
+Nem kell. A könyvhöz tartozó kódot teljes egészében coding agentek generálták a könyv szövege alapján, és a szerző sem olvassa soronként. A lényeg az architektúra, az alapvető komponensek és a tervezési elvek tisztázása; ezután az AI írja a kódot, futtatja a teszteket és javítja a hibákat, az ember pedig a kezdeti tervezésért és a végső átvételért felel.
+
+**K: Vannak referenciaválaszok a gondolatébresztő kérdésekhez?**
+Igen: [`book/reference-answers.md`](../../book/reference-answers.md) ([online változat](https://bojieli.github.io/ai-agent-book/book/reference-answers/)). Ezek csak referenciák, nem hivatalos megoldások; eltérő véleményedet szívesen látjuk a Discussions felületen.
+
+**K: A könyv elolvasása után milyen gyakorlati projektbe vághatok bele?**
+Javasoljuk, hogy építs a nulláról egy Claude Code- vagy Codex-szerű coding agentet: az 1–5. fejezet elég egy használható coding agent elkészítéséhez; a 7. és 9. fejezet segít értékelési halmazt építeni hozzá, és a hibás esetekből folyamatosan javítani; a 8. fejezet magába a modellbe nyúl bele; a 6. és 10. fejezet hang-, Computer Use- és egyéb interakciós módokat, valamint többügynökös együttműködést ad hozzá. Az értékelés, a megfigyelhetőség és a megbízhatóság mérnöki lépéseit a 7. fejezet értékelési kísérleteivel kezdheted: először építs a saját agentedhez egy tucatnyi feladatból álló kis értékelési halmazt, majd a hibás esetek köré szervezve javíts.
+
+**K: Hol lehet kérdezni és eszmét cserélni?**
+- Szöveghibák, kísérleti bugok, fordítási problémák: nyiss egy [Issue-t](https://github.com/bojieli/ai-agent-book/issues), és add meg a fejezetet, az alfejezetet és az eredeti mondatot.
+- Olvasás közben felmerülő kérdések, a gondolatébresztő kérdések megvitatása, tapasztalatmegosztás, anyagajánlás: használd a [GitHub Discussions](https://github.com/bojieli/ai-agent-book/discussions) felületet.
+
+**K: Hibát találtam, és javítani szeretném – mit tegyek?**
+Nyugodtan küldj közvetlenül Pull Requestet. A kínai változat, a [`book/`](../../book/) az elsődleges forrás, a többi nyelv a kínaiból szinkronizálódik: a főszöveg módosításakor elég a kínai változatot módosítani, és a PR-ben leírni; a fordítások az összeolvasztás után egységesen szinkronizálódnak. Részletek a [Közreműködés](#-közreműködés) szakaszban.
+
 ## 📦 Függelék · Külső repository-k beszerzése
 
 A 6., 7., 9. és 10. fejezethez tartozó 22 külső repository, valamint egy kiegészítő tanítási cookbook méret- és licencokokból nincs a projektbe csomagolva. Az alábbi parancsok reprodukálható kiindulópontként rögzített commitokat töltenek le.

@@ -115,6 +115,33 @@ Nên đăng ký API key từ vài nền tảng để thuận tiện học tập.
 | **Krill AI** | [www.krill-code.com](https://www.krill-code.com/register?invite=Q8D3L35725) | Truy cập một điểm đến các mô hình chính toàn cầu và nội địa Trung Quốc (OpenAI, Claude, Gemini, Grok, Kimi, GLM, DeepSeek, Qwen, Minimax) | Toàn cầu + Trung Quốc đại lục |
 | **OpenRouter** | <https://openrouter.ai/> | Truy cập một điểm đến các mô hình chính toàn cầu và nội địa Trung Quốc (GPT, Claude, Gemini, Kimi, GLM, DeepSeek, Qwen, v.v.) | Toàn cầu |
 
+## ❓ Câu hỏi thường gặp
+
+**Q: Có bản PDF / EPUB không? Tôi có phải tự build không?**
+Không cần. Mục [Sách điện tử](#-sách-điện-tử) liệt kê liên kết tải PDF / EPUB cho 15 ngôn ngữ, luôn trỏ tới bản dựng mới nhất của nhánh `main`; bạn cũng có thể [đọc trực tuyến](https://bojieli.github.io/ai-agent-book/). Chỉ khi muốn sửa bản thảo và dàn trang lại thì bạn mới cần tự build.
+
+**Q: Đọc cuốn sách này cần kiến thức nền gì?**
+Mục "Kiến thức tiên quyết" trong phần mở đầu giải thích đầy đủ: đọc hiểu và sửa được mã Python có độ phức tạp trung bình; đã dùng các sản phẩm LLM như ChatGPT, Claude; quen với ít nhất một công cụ lập trình có AI hỗ trợ (Claude Code, Codex, Cursor, v.v.); nắm các kiến thức kỹ thuật phần mềm cơ bản như dòng lệnh, Git, JSON, REST API. Ngoài Chương 8 về post-training, cả cuốn sách yêu cầu rất ít toán và học máy.
+
+**Q: Kiến thức nhiều, đọc xong lại quên, làm sao để tiêu hóa?**
+Đừng chỉ đọc phần chính văn. Cách được khuyến nghị là tự tay làm các thí nghiệm của từng chương — không phải đọc mã đi kèm, mà là hiểu các nguyên lý thiết kế trong sách rồi dùng coding agent tự cài đặt lại từ đầu, quan sát kết quả và truy tìm những chỗ không đúng như kỳ vọng; các câu hỏi tư duy cuối mỗi chương cũng là cách tự kiểm tra tốt. Lộ trình có hệ thống hơn xem tại [Gợi ý học tập](LEARNING.md). Một độc giả đã tổng kết rất đúng: trước tiên đọc cho cuốn sách mỏng đi, rồi đọc cho nó dày lên, rồi lại đọc cho nó mỏng đi.
+
+**Q: Có cần hiểu từng dòng mã thí nghiệm không?**
+Không cần. Toàn bộ mã đi kèm của sách do coding agent sinh ra từ bản thảo, và tác giả cũng không đọc từng dòng. Điều quan trọng là nghĩ thật rõ về kiến trúc, các thành phần cốt lõi và nguyên lý thiết kế, rồi để AI viết mã, chạy kiểm thử, sửa bug; con người chịu trách nhiệm thiết kế ban đầu và nghiệm thu cuối cùng.
+
+**Q: Câu hỏi tư duy có đáp án tham khảo không?**
+Có: [`book/reference-answers.md`](../../book/reference-answers.md) ([bản trực tuyến](https://bojieli.github.io/ai-agent-book/book/reference-answers/)). Đó chỉ là tham khảo, không phải đáp án chuẩn; hoan nghênh bạn trao đổi ý kiến khác trong Discussions.
+
+**Q: Đọc xong rồi có dự án thực hành nào để áp dụng?**
+Khuyên bạn tự làm từ đầu một coding agent giống Claude Code hay Codex: Chương 1–5 đủ để làm ra một coding agent dùng được; Chương 7 và 9 giúp bạn xây bộ đánh giá cho nó và liên tục cải thiện từ các ca thất bại; Chương 8 can thiệp vào chính mô hình; Chương 6 và 10 bổ sung cho nó các phương thức tương tác như giọng nói, Computer Use và cộng tác đa Agent. Với các khâu kỹ thuật như đánh giá, quan sát, độ tin cậy, có thể bắt đầu từ thí nghiệm đánh giá ở Chương 7: trước hết xây cho agent của mình một bộ đánh giá nhỏ khoảng mười mấy tác vụ, rồi cải thiện xoay quanh các ca thất bại.
+
+**Q: Đặt câu hỏi và thảo luận ở đâu?**
+- Lỗi trong bản thảo, bug thí nghiệm, vấn đề dịch thuật: mở [Issue](https://github.com/bojieli/ai-agent-book/issues), ghi rõ chương, mục và câu nguyên văn.
+- Thắc mắc khi đọc, thảo luận câu hỏi tư duy, chia sẻ kinh nghiệm, giới thiệu tài liệu: vui lòng dùng [GitHub Discussions](https://github.com/bojieli/ai-agent-book/discussions).
+
+**Q: Phát hiện lỗi muốn sửa thì làm thế nào?**
+Hoan nghênh gửi PR trực tiếp. Bản tiếng Trung [`book/`](../../book/) là bản gốc, các ngôn ngữ khác được đồng bộ từ tiếng Trung: khi sửa chính văn chỉ cần sửa bản tiếng Trung và ghi rõ trong PR, bản dịch sẽ được đồng bộ thống nhất sau khi merge. Xem chi tiết tại [Đóng góp](#-đóng-góp).
+
 ## 💎 Nhà tài trợ
 
 Cảm ơn **Krill AI** đã tài trợ dự án này! Krill cung cấp dịch vụ trung chuyển API chính thức, ổn định và cực nhanh cho GPT / Claude / Gemini và nhiều mô hình Trung Quốc, hỗ trợ tùy chỉnh cấp doanh nghiệp, xuất hóa đơn, hỗ trợ kỹ thuật riêng 7×16h, cùng kết nối WebSocket được tối ưu độc quyền cho tốc độ token đầu tiên cực nhanh.

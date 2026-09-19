@@ -59,3 +59,30 @@ Após gerar o PDF, é possível gerar e validar o EPUB a partir da raiz do repos
 ```
 
 O código-fonte da edição em português do Brasil está na pasta [`book-ptbr/`](book-ptbr/). O conteúdo é atualizado continuamente e pode diferir da edição chinesa original.
+
+## ❓ Perguntas frequentes
+
+**P: Existe PDF / EPUB? Preciso compilar por conta própria?**
+Não. A seção [Livro eletrônico](#livro-eletrônico) traz os links de download em PDF / EPUB (as edições nos 15 idiomas estão listadas no [README em inglês](docs/en/README.md)), sempre apontando para o build mais recente do branch main; também é possível [ler online](https://bojieli.github.io/ai-agent-book/). Só é preciso compilar se você quiser alterar o texto e refazer a diagramação.
+
+**P: Que conhecimentos prévios são necessários para ler o livro?**
+A seção "Pré-requisitos" da introdução explica em detalhes: saber ler e modificar código Python de complexidade média; já ter usado produtos de LLM como ChatGPT e Claude; ter familiaridade com pelo menos uma ferramenta de programação assistida por IA (Claude Code, Codex, Cursor etc.); conhecer noções básicas de engenharia de software, como linha de comando, Git, JSON e APIs REST. Exceto pelo pós-treinamento do capítulo 8, o livro exige muito pouco de matemática e aprendizado de máquina.
+
+**P: É muito conteúdo e eu esqueço logo depois de ler. Como assimilar?**
+Não leia apenas o texto. O caminho recomendado é pôr a mão na massa com os experimentos de cada capítulo — não lendo o código que acompanha o livro, mas entendendo os princípios de design apresentados e, com a ajuda de um coding agent, reimplementando tudo do zero, observando a saída e investigando o que não sai como esperado. As questões para reflexão no fim de cada capítulo também são uma boa autoavaliação. Para um percurso mais sistemático, veja o [guia de estudo](docs/en/LEARNING.md) (em inglês). Um leitor resumiu bem: primeiro leia o livro até ele ficar fino, depois até ficar grosso, depois até ficar fino de novo.
+
+**P: Preciso entender o código dos experimentos linha por linha?**
+Não. Todo o código que acompanha o livro foi gerado por coding agents a partir do texto, e o próprio autor não o lê linha por linha. O essencial é pensar com clareza a arquitetura, os componentes centrais e os princípios de design; depois, deixe a IA escrever o código, rodar os testes e corrigir bugs — a pessoa fica responsável pelo design inicial e pela aceitação final.
+
+**P: As questões para reflexão têm respostas de referência?**
+Sim: [`book-ptbr/reference-answers.ptbr.md`](book-ptbr/reference-answers.ptbr.md) (original em chinês: [`book/reference-answers.md`](book/reference-answers.md), [versão online](https://bojieli.github.io/ai-agent-book/book/reference-answers/)). São apenas referências, não gabaritos; opiniões diferentes são bem-vindas nas Discussions.
+
+**P: Que projeto prático posso construir depois de terminar o livro?**
+Recomendamos construir do zero um coding agent no estilo do Claude Code ou do Codex: os capítulos 1–5 bastam para produzir um coding agent utilizável; os capítulos 7 e 9 ajudam a montar um conjunto de avaliação e a melhorá-lo continuamente a partir dos casos de falha; o capítulo 8 intervém no próprio modelo; os capítulos 6 e 10 acrescentam formas de interação como voz e Computer Use, além de colaboração multiagente. As etapas de engenharia — avaliação, observabilidade, confiabilidade — podem começar pelos experimentos de avaliação do capítulo 7: monte primeiro um pequeno conjunto de avaliação com uma dúzia de tarefas para o seu agente e depois itere sobre os casos de falha.
+
+**P: Onde faço perguntas e participo das discussões?**
+- Erratas do texto, bugs nos experimentos, problemas de tradução: abra uma [Issue](https://github.com/bojieli/ai-agent-book/issues) indicando o capítulo, a seção e a frase original.
+- Dúvidas de leitura, discussão das questões para reflexão, troca de experiências, indicação de materiais: use o [GitHub Discussions](https://github.com/bojieli/ai-agent-book/discussions).
+
+**P: Encontrei um erro e quero corrigir. Como faço?**
+Pull Requests são bem-vindos. A versão em chinês, [`book/`](book/), é a fonte canônica, e os demais idiomas são sincronizados a partir dela: ao alterar o texto, basta modificar a versão em chinês e explicar no PR; as traduções são sincronizadas em conjunto após o merge. Veja os [Pull Requests](https://github.com/bojieli/ai-agent-book/pulls) do repositório.

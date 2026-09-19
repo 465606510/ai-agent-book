@@ -119,6 +119,33 @@ uv run python chapter1/context/main.py
 | **Krill AI** | [www.krill-code.com](https://www.krill-code.com/register?invite=Q8D3L35725) | 一站式访问全球及国内主流模型（OpenAI、Claude、Gemini、Grok、Kimi、GLM、DeepSeek、Qwen、Minimax） | 全球 + 中国大陆 |
 | **OpenRouter** | <https://openrouter.ai/> | 一站式访问全球及国内主流模型（GPT、Claude、Gemini、Kimi、GLM、DeepSeek、Qwen 等） | 全球 |
 
+## ❓ 常见问题
+
+**Q：有 PDF / EPUB 吗？需要自己编译吗？**
+不需要。[电子书](#-电子书)一节列出了 15 种语言的 PDF / EPUB 下载链接，始终指向 main 分支的最新构建；也可以[在线阅读](https://bojieli.github.io/ai-agent-book/)。只有想修改书稿并重新排版时才需要自行编译。
+
+**Q：阅读本书需要哪些前置知识？**
+引言的“前置知识”一节有完整说明：能读懂并修改中等复杂度的 Python 代码；用过 ChatGPT、Claude 等 LLM 产品；熟悉至少一款 AI 辅助编程工具（Claude Code、Codex、Cursor 等）；了解命令行、Git、JSON、REST API 等软件工程常识。除第八章后训练外，全书对数学和机器学习的要求很低。
+
+**Q：知识点多、读完就忘，怎么消化？**
+不要只读正文。推荐的方式是结合每章实验自己动手——不是看配套代码，而是读懂书中的设计原则后，借助 coding agent 从头实现一遍，观察输出、排查不符合预期的地方；每章末尾的思考题也是很好的自测。更系统的路径见[学习建议](docs/zh-CN/LEARNING.md)。一位读者的总结很贴切：先把书看薄，再把书看厚，再把书看薄。
+
+**Q：实验代码需要逐行弄明白吗？**
+不需要。本书的配套代码全部由 coding agent 根据书稿生成，作者也不会逐行阅读。关键是把架构、核心组件和设计原则想清楚，然后让 AI 去写代码、跑测试、修 bug，人负责最初的设计和最终的验收。
+
+**Q：思考题有参考答案吗？**
+有：[`book/reference-answers.md`](book/reference-answers.md)（[在线版](https://bojieli.github.io/ai-agent-book/book/reference-answers/)）。它们只是参考，不是标准答案，欢迎在 Discussions 里讨论你的不同看法。
+
+**Q：读完之后有什么可以落地的实践项目？**
+推荐从头做一个像 Claude Code、Codex 那样的 coding agent：第 1–5 章足以做出一个可用的 coding agent；第 7、9 章帮它建立评估集并从失败案例中持续改进；第 8 章介入模型本身；第 6、10 章为它增加语音、Computer Use 等交互方式和多 Agent 协作。评测、观测、可靠性这些工程环节，可以从第 7 章的评估实验入手：先为自己的 agent 建一个十几条任务的小评估集，再围绕失败用例做改进。
+
+**Q：哪里提问和讨论？**
+- 书稿勘误、实验 bug、翻译问题：开 [Issue](https://github.com/bojieli/ai-agent-book/issues)，请注明章节、小节和原文句子。
+- 阅读疑问、思考题讨论、经验分享、资料推荐：请使用 [GitHub Discussions](https://github.com/bojieli/ai-agent-book/discussions)。
+
+**Q：发现错误想修改怎么做？**
+欢迎直接提 PR。中文版 [`book/`](book/) 是正本，其余语言由中文同步：修改正文时只需改中文版并在 PR 里说明，翻译会在合并后统一同步。详见[贡献](#-贡献)。
+
 ## 💎 赞助商
 
 感谢 **Krill AI** 赞助本项目！Krill 提供 GPT / Claude / Gemini / 多款国产模型的官方稳定极速 API 中转服务，支持企业级定制、报销开票、7×16h 专属技术支持，更有独家适配的 WebSocket 连接方式，畅享极速首字速度。
