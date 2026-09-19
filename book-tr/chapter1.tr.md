@@ -305,7 +305,7 @@ Bu iskelet uygulama ayrıntılarını bilinçli olarak dışarıda bırakır. Ta
 
 Context ve Tools, Agent'ın "işi yapmasını" sağlar—görevi anlamasını ve ona göre eylemesini. Constrain, Verify ve Correct ise "işi yanlış yapmamasını" sağlar—Context ve Tools'tan ayrı bir şey değil, bunların üretimde güvenilir biçimde çalışmasını sağlayan mühendisliktir. Ve Agent ürünlerinin olgunluk eğrisi boyunca bu iki grubun ağırlığı değişir.
 
-Erken dönem Agent çerçeveleri Context ve Tools'a odaklandı: modele araçlar verin, context verin, işi yapmasına izin verin. Üretim düzeyindeki sistemler ağırlık merkezlerini Constrain, Verify ve Correct'e kaydırdı: araç çağrılarının güvenli olduğundan, context'in yönetildiğinden ve hataların kurtarılabilir olduğundan emin olmak.
+Erken dönem Agent çerçeveleri Context ve Tools'a odaklandı: modele araçlar verin, context verin, işi yapmasına izin verin. Üretim düzeyindeki sistemler ağırlık merkezlerini Constrain, Verify ve Correct'e kaydırdı: araç çağrılarının güvenli olduğundan, context'in yönetildiğinden ve hataların düzeltilebilir olduğundan emin olmak.
 
 Claude Code'u ele alalım. Harness kodunun büyük çoğunluğu Context ve Tools'u değil, Constrain, Verify ve Correct'i yapar—araçların kendisi (dosya okuma/yazma, komut çalıştırma, arama) yalnızca küçük bir parçadır; bunların etrafında inşa edilen güvenlik önlemleri gerçek çekirdektir. Bu mekanizmalar şunları içerir:
 

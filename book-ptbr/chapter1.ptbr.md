@@ -305,7 +305,7 @@ Esse esqueleto omite deliberadamente os detalhes de implementação. O ciclo com
 
 Contexto e Ferramentas permitem que o agente conclua tarefas — compreenda a tarefa e aja sobre ela. Restringir, Verificar e Corrigir asseguram que isso ocorra de maneira confiável e segura. Não são elementos separados do Contexto e das Ferramentas, mas práticas de engenharia que garantem seu funcionamento confiável em produção. Ao longo da curva de maturidade dos produtos baseados em agentes, a ênfase entre esses dois grupos muda.
 
-As primeiras estruturas para agentes se concentravam em Contexto e Ferramentas: forneciam ferramentas e contexto ao modelo para que ele pudesse concluir tarefas. Os sistemas de produção passaram a concentrar-se em Restringir, Verificar e Corrigir: garantir que as chamadas de ferramentas sejam seguras, o contexto seja gerenciado e os erros sejam recuperáveis.
+As primeiras estruturas para agentes se concentravam em Contexto e Ferramentas: forneciam ferramentas e contexto ao modelo para que ele pudesse concluir tarefas. Os sistemas de produção passaram a concentrar-se em Restringir, Verificar e Corrigir: garantir que as chamadas de ferramentas sejam seguras, o contexto seja gerenciado e os erros sejam corrigíveis.
 
 Considere o Claude Code. A maior parte do código de seu harness se dedica a Restringir, Verificar e Corrigir, e não a Contexto e Ferramentas. As próprias ferramentas — leitura e gravação de arquivos, execução de comandos e busca — representam apenas uma pequena parcela; as salvaguardas construídas ao redor delas constituem o verdadeiro núcleo. Esses mecanismos incluem:
 

@@ -305,7 +305,7 @@ Kerangka ini sengaja tidak memuat detail implementasi. Loop pesan API lengkap ad
 
 Context dan Tool memungkinkan Agent menyelesaikan tugas—memahami tugas dan mengerjakannya. Constrain, Verify, dan Correct memastikan ia melakukannya dengan andal dan aman—bukan sebagai sesuatu yang terpisah dari Context dan Tool, tetapi sebagai rekayasa yang menjaganya tetap bekerja secara andal dalam produksi. Di sepanjang kurva kematangan (maturity curve) produk Agent, penekanan di antara kedua kelompok ini bergeser.
 
-Kerangka kerja Agent pada tahap awal berfokus pada Context dan Tool: beri model tool, beri ia context, dan biarkan ia menyelesaikan tugas. Sistem berkelas produksi (production-grade) telah memindahkan pusat gravitasinya ke Constrain, Verify, dan Correct: memastikan panggilan tool itu aman, context dapat dikelola (managed), dan error dapat dipulihkan (recoverable).
+Kerangka kerja Agent pada tahap awal berfokus pada Context dan Tool: beri model tool, beri ia context, dan biarkan ia menyelesaikan tugas. Sistem berkelas produksi (production-grade) telah memindahkan pusat gravitasinya ke Constrain, Verify, dan Correct: memastikan panggilan tool itu aman, context dapat dikelola (managed), dan error dapat dikoreksi (correctable).
 
 Contohnya Claude Code. Sebagian besar kode Harness-nya melakukan Constrain, Verify, dan Correct, bukan Context dan Tool—tool itu sendiri (baca/tulis file, eksekusi perintah, pencarian) hanyalah bagian kecil; perlindungan yang dibangun di sekitar merekalah (the safeguards built around them) yang menjadi inti sesungguhnya. Mekanisme ini meliputi:
 

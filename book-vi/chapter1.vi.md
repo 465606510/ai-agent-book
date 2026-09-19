@@ -305,7 +305,7 @@ Khung này chủ ý lược bỏ chi tiết triển khai. Vòng lặp thông đi
 
 Ngữ cảnh và công cụ cho phép Agent "làm mọi việc" - hiểu nhiệm vụ và thực hiện hành động; các ràng buộc, xác minh và sửa chữa cho phép Agent "không làm sai" - chúng không phải là những thứ độc lập với ngữ cảnh và công cụ, mà là các thực tiễn kỹ thuật đảm bảo rằng ngữ cảnh và công cụ hoạt động đáng tin cậy trong môi trường sản xuất. Trên đường cong trưởng thành của sản phẩm Agent, tầm quan trọng của cả hai là không đối xứng.
 
-Khung Agent ban đầu chủ yếu tập trung vào ngữ cảnh và công cụ: cung cấp cho mô hình các công cụ và ngữ cảnh để nó có thể "làm mọi việc". Trọng tâm của hệ thống Agent cấp sản xuất đã chuyển sang các ràng buộc, xác minh và sửa lỗi: đảm bảo rằng các lệnh gọi công cụ được an toàn, ngữ cảnh được quản lý và các lỗi có thể phục hồi được.
+Khung Agent ban đầu chủ yếu tập trung vào ngữ cảnh và công cụ: cung cấp cho mô hình các công cụ và ngữ cảnh để nó có thể "làm mọi việc". Trọng tâm của hệ thống Agent cấp sản xuất đã chuyển sang các ràng buộc, xác minh và sửa lỗi: đảm bảo rằng các lệnh gọi công cụ được an toàn, ngữ cảnh được quản lý và các lỗi có thể sửa được.
 
 Lấy Claude Code làm ví dụ. Hầu hết các mã trong Harness của nó là các ràng buộc, xác minh và sửa chữa, thay vì ngữ cảnh và công cụ - bản thân các công cụ (đọc và ghi tệp, thực thi lệnh, tìm kiếm) chỉ là một phần nhỏ và cơ chế bảo vệ được xây dựng xung quanh các công cụ này mới là cốt lõi thực sự. Các cơ chế này bao gồm:
 
