@@ -832,7 +832,7 @@ Mid-training, SFT, RL ஆகியவை பரிமாறிக்கொள்
 [^ch8-11]: Agent நேர உணர்விற்கான இந்த பிந்தைய-பயிற்சி ஒப்பீடுகள்—DPO மற்றும் நான்கு RL முறைகளின் தோல்வி முறைகள், மற்றும் On-Policy Distillation இன் முன்னேற்றம்—Li, Bojie மற்றும் Noah Shi, "Agents That Sense Physical Time: Urgency, Persistence, and Vigilance as Missing Controls for LLM Agents", 2026. https://01.me/research/physical-time-agent இலிருந்து எடுக்கப்பட்டவை.
 [^ch8-12]: Kulikov, Ilia, et al. *Autodata: An Agentic Data Scientist to Create High Quality Synthetic Data.* arXiv:2606.25996, 2026.
 [^ch8-13]: Sun, Hao, et al. *ZeroSearch: Incentivize the Search Capability of LLMs without Searching.* arXiv:2505.04588, 2025.
-[^ch8-14]: *DreamGym: Scaling Agent Learning via Experience Synthesis.* arXiv:2511.01824, 2025.
+[^ch8-14]: *DreamGym: Scaling Agent Learning via Experience Synthesis.* arXiv:2511.03773, 2025.
 [^ch8-15]: Zhao, Siyan, et al. *Self-Distilled Reasoner: On-Policy Self-Distillation for Large Language Models.* arXiv:2601.18734, 2026.
 [^ch8-16]: Shen, Ziqi, et al. *Purified OPSD: On-Policy Self-Distillation Without Losing How to Think.* arXiv:2607.02234, 2026.
 [^ch8-17]: Tan, Zelin, et al. *SKT: Skill-Use Training at Scale via Verified Synthetic Data Generation.* arXiv:2608.02287, 2026.
