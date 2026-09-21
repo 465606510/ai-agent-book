@@ -6,6 +6,13 @@ import json
 import logging
 import time
 import sys
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 from typing import List, Dict, Any, Optional, Generator, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -33,39 +40,40 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ToolCall:
-    """Represents a single tool call"""
-    tool_name: str
-    arguments: Dict[str, Any]
-    result: Optional[Any] = None
-    compressed_result: Optional[CompressedContent] = None
+    """
+    单次工具调用记录 (Tool Call)
+    记录 Agent 在某一步执行了哪个工具、传入了什么参数、原始输出结果以及压缩后的结果。
+    """
+    tool_name: str                                          # 调用的工具名（如 'search_web' 或 'fetch_webpage'）
+    arguments: Dict[str, Any]                              # 模型生成的调用参数（如 {'query': '...'}）
+    result: Optional[Any] = None                           # 工具执行后返回的原始内容
+    compressed_result: Optional[CompressedContent] = None   # 经过压缩策略处理后的精简内容
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    # Provider-side tool_call id, so a tool message in the history can be
-    # matched back to the call that produced it (used by windowed compression
-    # to recover the original query).
-    id: Optional[str] = None
+    id: Optional[str] = None                               # 服务端返回的 tool_call id，用于消息配对
 
 
 @dataclass
 class AgentTrajectory:
-    """Tracks the agent's execution trajectory"""
-    tool_calls: List[ToolCall] = field(default_factory=list)
-    total_tokens_used: int = 0
-    prompt_tokens_used: int = 0
-    completion_tokens_used: int = 0
-    # Prompt tokens of the most recent API call = the current context size.
-    # prompt_tokens_used above is a cumulative COST counter (each call's
-    # prompt re-counts the shared prefix), so it must not be compared
-    # against the per-request context window.
-    last_prompt_tokens: int = 0
-    context_overflows: int = 0
-    compression_strategy: CompressionStrategy = CompressionStrategy.NO_COMPRESSION
-    start_time: float = field(default_factory=time.time)
-    end_time: Optional[float] = None
+    """
+    Agent 执行轨迹追踪器 (Trajectory Tracker)
+    全程记录 Agent 在长任务中的资源使用情况，包括 Token 计数、耗时、压缩策略和是否溢出。
+    """
+    tool_calls: List[ToolCall] = field(default_factory=list) # 历史上所有的工具调用列表
+    total_tokens_used: int = 0                              # 累积消耗的 Token 总量
+    prompt_tokens_used: int = 0                             # 累积消耗的输入 Prompt Token
+    completion_tokens_used: int = 0                         # 累积消耗的输出 Completion Token
+    last_prompt_tokens: int = 0                             # 最近一次 API 调用的 Prompt Token（代表当前瞬时上下文大小）
+    context_overflows: int = 0                              # 触发上下文溢出（超出硬性窗口上限）的次数
+    compression_strategy: CompressionStrategy = CompressionStrategy.NO_COMPRESSION # 当前使用的压缩策略
+    start_time: float = field(default_factory=time.time)    # 任务启动时间戳
+    end_time: Optional[float] = None                        # 任务完成时间戳
 
 
 class ResearchAgent:
     """
-    AI Agent for researching with context compression
+    具备上下文压缩与长流程研究能力的 ReAct 智能体
+    能够自主调用搜索工具检索信息，并在多轮交互中根据选定的策略动态压缩对话历史，
+    保证在完成复杂长任务的同时不突破大模型的上下文预算。
     """
     
     def __init__(
@@ -86,9 +94,11 @@ class ResearchAgent:
         """
         # Moonshot 官方 key 存在则直连；否则回退 OpenRouter（见 Config.resolve_llm）。
         resolved_key, resolved_base_url, resolved_model = Config.resolve_llm()
+        # 设置超时时间为 60 秒，避免走本地网络代理时因 SSL 握手耗时导致 Request timed out
         self.client = OpenAI(
             api_key=resolved_key,
-            base_url=resolved_base_url
+            base_url=resolved_base_url,
+            timeout=60.0
         )
         self.model = resolved_model
         self.compression_strategy = compression_strategy
@@ -399,22 +409,26 @@ TODAY'S DATE: {date_string}"""
                     # Handle tool calls in streaming
                     if hasattr(delta, 'tool_calls') and delta.tool_calls:
                         for tool_call_delta in delta.tool_calls:
-                            if tool_call_delta.index is not None:
-                                # Ensure we have enough tool calls in the list
-                                while len(current_tool_calls) <= tool_call_delta.index:
-                                    current_tool_calls.append({
-                                        "id": "",
-                                        "type": "function",
-                                        "function": {"name": "", "arguments": ""}
-                                    })
-                                
-                                if tool_call_delta.id:
-                                    current_tool_calls[tool_call_delta.index]["id"] = tool_call_delta.id
-                                if tool_call_delta.function:
-                                    if tool_call_delta.function.name:
-                                        current_tool_calls[tool_call_delta.index]["function"]["name"] = tool_call_delta.function.name
-                                    if tool_call_delta.function.arguments:
-                                        current_tool_calls[tool_call_delta.index]["function"]["arguments"] += tool_call_delta.function.arguments
+                            idx = tool_call_delta.index if tool_call_delta.index is not None else (len(current_tool_calls) - 1 if current_tool_calls else 0)
+                            if idx < 0:
+                                idx = 0
+                            while len(current_tool_calls) <= idx:
+                                current_tool_calls.append({
+                                    "id": "",
+                                    "type": "function",
+                                    "function": {"name": "", "arguments": ""}
+                                })
+                            
+                            if tool_call_delta.id:
+                                current_tool_calls[idx]["id"] = tool_call_delta.id
+                            if tool_call_delta.function:
+                                if tool_call_delta.function.name:
+                                    current_tool_calls[idx]["function"]["name"] = tool_call_delta.function.name
+                                if tool_call_delta.function.arguments:
+                                    current_tool_calls[idx]["function"]["arguments"] += tool_call_delta.function.arguments
+                            # 保留 Google Gemini 等模型需要的 thought_signature 等元数据
+                            if hasattr(tool_call_delta, 'extra_content') and tool_call_delta.extra_content:
+                                current_tool_calls[idx]["extra_content"] = tool_call_delta.extra_content
             
             print("\n", flush=True)
             
@@ -490,8 +504,9 @@ TODAY'S DATE: {date_string}"""
         }
         
         if hasattr(message, 'tool_calls') and message.tool_calls:
-            message_dict["tool_calls"] = [
-                {
+            message_dict["tool_calls"] = []
+            for tc in message.tool_calls:
+                tc_item = {
                     "id": tc.id,
                     "type": "function",
                     "function": {
@@ -499,8 +514,9 @@ TODAY'S DATE: {date_string}"""
                         "arguments": tc.function.arguments
                     }
                 }
-                for tc in message.tool_calls
-            ]
+                if hasattr(tc, 'extra_content') and tc.extra_content:
+                    tc_item["extra_content"] = tc.extra_content
+                message_dict["tool_calls"].append(tc_item)
         
         # Display the response
         if message.content:

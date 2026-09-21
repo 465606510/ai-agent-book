@@ -7,6 +7,16 @@ import os
 import sys
 import json
 import time
+
+# python .\experiment.py -s context_aware
+# Windows 控制台默认代码页通常是 GBK (cp936)，打印 Emoji 会报 UnicodeEncodeError
+# 强制 stdout 和 stderr 采用 UTF-8 编码
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 import argparse
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -18,44 +28,58 @@ from config import Config
 from agent import ResearchAgent
 from compression_strategies import CompressionStrategy
 
-# Initialize colorama for colored output
+# 初始化 colorama，使 Windows 终端能正常输出带颜色的文本（autoreset=True 表示每次 print 自动重置颜色）
 init(autoreset=True)
 
 
-# Short CLI aliases -> compression strategy (order matches the book's 实验 2-10)
+# ==============================================================================
+# 策略映射字典 (STRATEGY_CHOICES)
+# 作用：将命令行传参的简短别名（例如 -s context_aware）映射为内部枚举 CompressionStrategy
+# 顺序与《深入理解 AI Agent》第 2 章“实验 2-10 ★★★：上下文压缩策略对比”完全对齐
+# ==============================================================================
 STRATEGY_CHOICES = {
+    # 1. 无压缩基线：原始网页全量塞入消息历史，用于观察不加控制时上下文迅速溢出（Overflow）的现象
     "no_compression": CompressionStrategy.NO_COMPRESSION,
+    # 2. 单页独立摘要：每抓取一个网页就让模型总结一次，再拼接起来。简单但丢失跨网页的关联关系
     "individual": CompressionStrategy.NON_CONTEXT_AWARE_INDIVIDUAL,
+    # 3. 全局合并摘要：将本次工具调用涉及的全部网页合并后一次性总结。结构连贯，但单页归因较弱
     "combined": CompressionStrategy.NON_CONTEXT_AWARE_COMBINED,
+    # 4. 上下文/目标感知摘要（推荐）：带着当前研究的目标问题去提炼网页信息，只保留直接相关的关键事实
     "context_aware": CompressionStrategy.CONTEXT_AWARE,
+    # 5. 带引用的目标感知摘要：在策略 4 的基础上，强制保留网页 URL 和出处引用，方便后续追问与核查
     "citations": CompressionStrategy.CONTEXT_AWARE_CITATIONS,
+    # 6. 滑动窗口：仅保留最近几轮工具调用的输出，最早的历史直接丢弃。简单但容易丢失早期关键记忆
     "windowed": CompressionStrategy.WINDOWED_CONTEXT,
 }
 
+# 所有支持的策略列表（用于默认跑全量测试）
 ALL_STRATEGIES = list(STRATEGY_CHOICES.values())
 
 
 class ExperimentRunner:
-    """Runs experiments comparing different compression strategies"""
+    """
+    实验运行与评估控制器 (Experiment Runner)
+    负责统一调度不同压缩策略的执行、收集 Agent 的运行轨迹与资源消耗、输出横向对比报告并持久化到 JSON 文件。
+    """
     
     def __init__(self, api_key: str, results_file: Optional[str] = None,
                  enable_streaming: bool = False):
         """
-        Initialize the experiment runner
+        初始化实验运行器
 
-        Args:
-            api_key: API key for Kimi/Moonshot
-            results_file: Optional explicit path for the results JSON (default: results/experiment_TIMESTAMP.json)
-            enable_streaming: Stream compression/model output to the console during the run
+        参数:
+            api_key: 模型调用 API Key
+            results_file: 结果 JSON 文件的指定存储路径（若不指定，默认保存在 results/experiment_<时间戳>.json）
+            enable_streaming: 是否在终端实时流式打印大模型与压缩过程的文字输出（默认 False 以保持对比表格干净整洁）
         """
         self.api_key = api_key
         self.results = []
         self.enable_streaming = enable_streaming
 
-        # Create results directory
+        # 创建必要的输出目录（如 results/ 和 cache/）
         Config.create_directories()
 
-        # Results file
+        # 确定评测结果的保存路径
         if results_file:
             self.results_file = results_file
             parent = os.path.dirname(self.results_file)
@@ -67,40 +91,40 @@ class ExperimentRunner:
 
     def run_single_strategy(self, strategy: CompressionStrategy, verbose: bool = False) -> Dict[str, Any]:
         """
-        Run experiment with a single compression strategy
-        
-        Args:
-            strategy: Compression strategy to test
-            verbose: Enable verbose output
+        运行单个压缩策略的独立实验
+
+        参数:
+            strategy: 待评测的压缩策略枚举（例如 CompressionStrategy.CONTEXT_AWARE）
+            verbose: 是否开启详细调试日志输出
             
-        Returns:
-            Experiment results
+        返回:
+            包含该策略完整运行指标（metrics）与最终研究答案（final_answer）的字典
         """
         print(f"\n{Fore.CYAN}{'='*70}")
         print(f"{Fore.CYAN}Testing Strategy: {Fore.YELLOW}{strategy.value}")
         print(f"{Fore.CYAN}{'='*70}{Style.RESET_ALL}")
         
-        # Create agent with the strategy
+        # 1. 为当前策略单独实例化一个 ResearchAgent 智能体
         agent = ResearchAgent(
             api_key=self.api_key,
             compression_strategy=strategy,
             verbose=verbose,
-            enable_streaming=self.enable_streaming  # Off by default for cleaner experiment output
+            enable_streaming=self.enable_streaming  # 默认关闭流式输出，保持终端表格整洁
         )
         
         start_time = time.time()
         
         try:
-            # Execute the research task
+            # 2. 启动智能体的自主研究主循环（最大迭代轮数由 Config.MAX_ITERATIONS 限制）
             result = agent.execute_research(max_iterations=Config.MAX_ITERATIONS)
             
             end_time = time.time()
             execution_time = end_time - start_time
             
-            # Analyze results
+            # 3. 收集并分析执行轨迹（trajectory）中的核心指标
             trajectory = result.get('trajectory')
             
-            # Calculate metrics
+            # 整理指标卡片：成功与否、迭代轮数、工具调用数、溢出次数、总耗时、Token 用量
             metrics = {
                 'strategy': strategy.value,
                 'success': result.get('success', False),
@@ -113,7 +137,7 @@ class ExperimentRunner:
                 'final_answer_length': len(result.get('final_answer', '')) if result.get('final_answer') else 0
             }
             
-            # Calculate compression ratios
+            # 4. 计算文本压缩率（压缩后字符数 / 原始抓取字符数）
             if trajectory and trajectory.tool_calls:
                 total_original = 0
                 total_compressed = 0
@@ -123,7 +147,7 @@ class ExperimentRunner:
                         total_original += call.compressed_result.original_length
                         total_compressed += call.compressed_result.compressed_length
                     elif call.result and call.tool_name == 'search_web':
-                        # No compression - count full size
+                        # 无压缩基线：统计原始 JSON 的字符体积
                         content = json.dumps(call.result)
                         total_original += len(content)
                         total_compressed += len(content)
@@ -190,7 +214,10 @@ class ExperimentRunner:
             return f"{Fore.RED}✗ No{Style.RESET_ALL}"
     
     def run_all_strategies(self, strategies: Optional[List[CompressionStrategy]] = None) -> None:
-        """Run experiments for the given compression strategies (default: all six)"""
+        """
+        批量调度运行指定的压缩策略列表（默认运行全部 6 种）
+        通过 tqdm 显示进度条，并在每个策略结束后自动落盘保存中间结果。
+        """
         if strategies is None:
             strategies = list(ALL_STRATEGIES)
 
@@ -200,37 +227,41 @@ class ExperimentRunner:
         print(f"\nTesting {len(strategies)} compression strategies...")
         print(f"Task: Research current affiliations of OpenAI co-founders")
         
-        # Run each strategy
+        # 逐个执行策略，利用 tqdm 动态渲染进度条
         for strategy in tqdm(strategies, desc="Running experiments"):
             result = self.run_single_strategy(strategy)
             self.results.append(result)
             
-            # Save intermediate results
+            # 每跑完一个策略立即保存到磁盘，防止中途异常退出丢失数据
             self._save_results()
             
-            # Small delay between experiments
+            # 策略之间预留 2 秒冷却，避免频繁发起 API 请求被服务端限流
             time.sleep(2)
         
-        # Print final comparison
+        # 全部策略执行完毕，打印最终横向综合对比总表
         self._print_comparison()
     
     def _save_results(self):
-        """Save results to JSON file"""
-        with open(self.results_file, 'w') as f:
-            json.dump(self.results, f, indent=2, default=str)
+        """将运行评测指标和结果持久化保存到 JSON 文件"""
+        with open(self.results_file, 'w', encoding='utf-8') as f:
+            json.dump(self.results, f, indent=2, default=str, ensure_ascii=False)
         
         print(f"\n💾 Results saved to: {self.results_file}")
     
     def _print_comparison(self):
-        """Print comparison table of all strategies"""
+        """
+        打印所有策略的终极横向对比大表：
+        输出各策略的【是否成功】、【总耗时】、【Token消耗】、【压缩率】、【上下文溢出次数】
+        """
         print(f"\n{Fore.MAGENTA}{'='*70}")
         print(f"{Fore.MAGENTA}FINAL COMPARISON")
         print(f"{Fore.MAGENTA}{'='*70}{Style.RESET_ALL}")
         
-        # Create comparison table
+        # 打印表头
         print(f"\n{'Strategy':<38} {'Success':<9} {'Time':<9} {'Tokens':<11} {'Compress':<10} {'Overflows':<10}")
         print("-" * 90)
 
+        # 逐行输出对比数据，成功显示绿色，失败显示红色
         for result in self.results:
             metrics = result['metrics']
             strategy = metrics['strategy'][:36]
@@ -240,17 +271,22 @@ class ExperimentRunner:
             compress = f"{metrics.get('compression_ratio', 1.0):.1%}" if 'compression_ratio' in metrics else "N/A"
             overflows = str(metrics.get('context_overflows', 0))
 
-            # Color code success
             color = Fore.GREEN if metrics['success'] else Fore.RED
             print(f"{color}{strategy:<38} {success:<9} {time_str:<9} {tokens:<11} {compress:<10} {overflows:<10}{Style.RESET_ALL}")
 
         print("\n" + "="*90)
         
-        # Analysis summary
+        # 输出统计与核心实验发现
         self._print_analysis()
     
     def _print_analysis(self):
-        """Print analysis of the results"""
+        """
+        分析对比实验结果，提炼核心结论：
+        1. 统计成功与失败的策略数量
+        2. 找出执行速度最快的策略（Fastest）
+        3. 找出压缩率最高、最节省字符的策略（Most Efficient）
+        4. 罗列实验总结核心发现（Key Findings）
+        """
         print(f"\n{Fore.CYAN}📈 Analysis:{Style.RESET_ALL}")
         
         successful = [r for r in self.results if r['metrics']['success']]
@@ -259,7 +295,7 @@ class ExperimentRunner:
         print(f"\n  Successful Strategies: {len(successful)}/{len(self.results)}")
         
         if successful:
-            # Find best performing
+            # 找到最快的策略和最极致压缩的策略
             fastest = min(successful, key=lambda x: x['metrics']['execution_time'])
             most_efficient = min(successful, key=lambda x: x['metrics'].get('total_compressed_size', float('inf')))
             
@@ -269,18 +305,16 @@ class ExperimentRunner:
         if failed:
             print(f"\n  Failed Strategies:")
             for r in failed:
-                # error may be present-but-None when a strategy fails by hitting the
-                # iteration cap (rather than raising), so coalesce before slicing.
                 err = r['metrics'].get('error') or 'No final answer within max iterations'
                 print(f"    - {r['metrics']['strategy']}: {err[:50]}...")
         
-        # Key findings
+        # 核心实验结论总结（与书本正文论述对应）
         print(f"\n{Fore.CYAN}🔍 Key Findings:{Style.RESET_ALL}")
-        print("  1. No Compression: Expected to fail with context overflow ✓")
-        print("  2. Non-Context-Aware: May lose important context details")
-        print("  3. Context-Aware: Better relevance preservation")
-        print("  4. With Citations: Enables follow-up questions")
-        print("  5. Windowed Context: Balance between detail and efficiency")
+        print("  1. No Compression (无压缩): 预期必然在长任务中因上下文溢出而崩溃 ✓")
+        print("  2. Non-Context-Aware (非目标感知): 容易丢失后续回答所需的关键背景事实")
+        print("  3. Context-Aware (目标感知压缩): 兼顾极低 Token 与极高信息保留率，表现最佳")
+        print("  4. With Citations (带引用出处): 能为后续事实核实和追问提供可信来源")
+        print("  5. Windowed Context (滑动窗口): 虽简单高效，但若窗口过小会遗忘早期关键记忆")
 
 
 def build_parser() -> argparse.ArgumentParser:

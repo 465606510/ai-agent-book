@@ -75,9 +75,11 @@ class ContextCompressor:
         self.enable_streaming = enable_streaming
         # Moonshot 官方 key 存在则直连；否则回退 OpenRouter（见 Config.resolve_llm）。
         resolved_key, resolved_base_url, resolved_model = Config.resolve_llm()
+        # 设置超时时间为 60 秒，避免走本地网络代理时因 SSL 握手耗时导致超时
         self.client = OpenAI(
             api_key=resolved_key,
-            base_url=resolved_base_url
+            base_url=resolved_base_url,
+            timeout=60.0
         )
         self.model = resolved_model
         
@@ -207,7 +209,7 @@ Provide a focused summary:"""
                     temperature=_reasoning_safe_temperature(self.model, 0.3),
                     max_tokens=_reasoning_safe_max_tokens(self.model, Config.SUMMARY_MAX_TOKENS)
                 )
-                compressed = response.choices[0].message.content
+                compressed = response.choices[0].message.content or ""
             
             return CompressedContent(
                 original_length=original_length,
@@ -319,7 +321,7 @@ Provide a concise summary:"""
                         temperature=_reasoning_safe_temperature(self.model, 0.3),
                         max_tokens=_reasoning_safe_max_tokens(self.model, 300)
                     )
-                    summary = response.choices[0].message.content
+                    summary = response.choices[0].message.content or ""
                 
                 summaries.append(f"""
 Source: {result.get('title', 'N/A')}
@@ -428,7 +430,7 @@ Provide a comprehensive summary:"""
                     temperature=_reasoning_safe_temperature(self.model, 0.3),
                     max_tokens=_reasoning_safe_max_tokens(self.model, Config.SUMMARY_MAX_TOKENS)
                 )
-                summary = response.choices[0].message.content
+                summary = response.choices[0].message.content or ""
             
             return CompressedContent(
                 original_length=total_original,
@@ -536,7 +538,7 @@ Provide a query-focused summary:"""
                     temperature=_reasoning_safe_temperature(self.model, 0.3),
                     max_tokens=_reasoning_safe_max_tokens(self.model, Config.SUMMARY_MAX_TOKENS)
                 )
-                summary = response.choices[0].message.content
+                summary = response.choices[0].message.content or ""
             
             return CompressedContent(
                 original_length=total_original,
@@ -648,7 +650,7 @@ Provide a query-focused summary with citations:"""
                     temperature=_reasoning_safe_temperature(self.model, 0.3),
                     max_tokens=_reasoning_safe_max_tokens(self.model, Config.SUMMARY_MAX_TOKENS)
                 )
-                summary = response.choices[0].message.content
+                summary = response.choices[0].message.content or ""
             
             # Append source list
             source_list = "\n\nSources:\n"
