@@ -621,7 +621,7 @@ TODAY'S DATE: {date_string}"""
         返回:
             Dict[str, Any]: 包含 final_answer、trajectory、iterations、success、execution_time 的结果字典
         """
-        # 1. 注入初始用户任务提示
+        # 1. 注入初始用户任务提示 请调研并查明所有 OpenAI 联合创始人的当前从属机构/最新去向（affiliations）
         self.conversation_history.append({
             "role": "user",
             "content": "Please research and find the current affiliations of all OpenAI co-founders."
